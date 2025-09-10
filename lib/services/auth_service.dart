@@ -1,10 +1,11 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:vvs_app/screens/common/modals/auth_modal.dart';
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-
+ 
   Future<String?> register({
     required String email,
     required String password,
@@ -25,12 +26,19 @@ class AuthService {
       return e.message;
     }
   }
-  Future<String?> login({
-    required String email,
-    required String password,
-  }) async {
+
+  Future<String?> login({required LoginRequest logindata}) async
+  
+   {
+    print("i am from login service");
+    print(logindata.email);
+    print(logindata.password);
+
     try {
-      await _auth.signInWithEmailAndPassword(email: email, password: password);
+      await _auth.signInWithEmailAndPassword(
+        email: logindata.email,
+        password: logindata.password,
+      );
       return null;
     } on FirebaseAuthException catch (e) {
       return e.message;

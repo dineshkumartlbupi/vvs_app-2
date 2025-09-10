@@ -1,10 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:vvs_app/screens/child_screens/about_developer_screen.dart';
+import 'package:vvs_app/screens/child_screens/blog_screen.dart';
+import 'package:vvs_app/screens/child_screens/book_author/screens/books_author.dart';
+//import 'package:vvs_app/screens/child_screens/books_author.dart';
+import 'package:vvs_app/screens/child_screens/family_regiestration/screens/family_registration_screen.dart';
+import 'package:vvs_app/screens/child_screens/marketplace/screens/marketplace_screen.dart';
+import 'package:vvs_app/screens/child_screens/testimonial_screen.dart';
+import 'package:vvs_app/screens/child_screens/vvs_id_card_screen.dart';
 import 'package:vvs_app/screens/home_screen.dart';
 import 'package:vvs_app/screens/profile_screen.dart';
-import 'package:vvs_app/screens/child_screens/news_bulletin_screen.dart';
+import 'package:vvs_app/screens/child_screens/news/screens/news_bulletin_screen.dart';
 import 'package:vvs_app/screens/child_screens/matrimonial_screen.dart';
-import 'package:vvs_app/screens/child_screens/marketplace_screen.dart';
-import 'package:vvs_app/screens/child_screens/family_registration_screen.dart';
+//import 'package:vvs_app/screens/child_screens/marketplace_screen.dart';
+//import 'package:vvs_app/screens/child_screens/family_registration_screen.dart';
 import 'package:vvs_app/screens/child_screens/directory_screen.dart';
 import 'package:vvs_app/screens/child_screens/blood_group_screen.dart';
 import 'package:vvs_app/screens/child_screens/healthcare_screen.dart';
@@ -29,7 +37,7 @@ class DashboardScreen extends StatefulWidget {
 class _DashboardScreenState extends State<DashboardScreen> {
   final List<Widget> _bottomScreens = [
     const HomeScreen(),
-    const NewsBulletinScreen(),
+    NewsBulletinScreen(),
     const MatrimonialScreen(),
     const MarketPlaceScreen(),
     const ProfileScreen(),
@@ -49,10 +57,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
     'About Us': const AboutUsScreen(),
     'Family Registration': const FamilyRegistrationScreen(),
     'Directory Who\'s & Who': const DirectoryScreen(),
+    'Books & Author': const AuthorBooksScreen(),
+    'About Developer': const AboutDeveloperScreen(),
     'Blood Group & Donors': const BloodDonorsScreen(),
     'Health Care': const HealthCareScreen(),
     'Education': const EducationScreen(),
     'Group Chat': const GroupChatScreen(),
+    'VVS ID Card': const VvsIdCardScreen(),
+        'Testimonial': const TestimonialsScreen(),
+        'Blog': const BlogScreen(),
     'Upcoming Events': const EventsScreen(),
     'Offers & Discounts': const OffersScreen(),
     'Payment Gateway': const PaymentScreen(),

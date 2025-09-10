@@ -1,6 +1,5 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:vvs_app/screens/child_screens/family_regiestration/controller/family_controller.dart'; 
 import 'package:vvs_app/theme/app_colors.dart';
 import 'package:vvs_app/widgets/app_dropdown.dart';
 import 'package:vvs_app/widgets/ui_components.dart';
@@ -45,30 +44,26 @@ class _FamilyRegistrationScreenFormState
     if (!_formKey.currentState!.validate()) return;
     setState(() => _loading = true);
 
-    await FirebaseFirestore.instance.collection('family_members').add({
-      'name': _nameController.text.trim(),
-      'relation': _relationController.text.trim(),
-      'age': int.tryParse(_ageController.text.trim()) ?? 0,
-      'dob': _dobController.text.trim(),
-      'gender': _selectedGender,
-      'maritalStatus': _selectedMaritalStatus,
-      'occupation': _occupationController.text.trim(),
-      'qualification': _qualificationController.text.trim(),
-      'profession': _professionController.text.trim(),
-      'email': _emailController.text.trim(),
-      'mobile': _mobileController.text.trim(),
-      'address': _addressController.text.trim(),
-      'bloodGroup': _bloodGroupController.text.trim(),
-      'aadhaarNumber': _aadhaarNumberController.text.trim(),
-      'createdAt': FieldValue.serverTimestamp(),
-      'createdBy': FirebaseAuth.instance.currentUser?.uid,
-    });
+    await FamilyController.saveMember(
+      context: context,
+      name: _nameController.text,
+      relation: _relationController.text,
+      age: _ageController.text,
+      dob: _dobController.text,
+      gender: _selectedGender,
+      maritalStatus: _selectedMaritalStatus,
+      occupation: _occupationController.text,
+      qualification: _qualificationController.text,
+      profession: _professionController.text,
+      email: _emailController.text,
+      mobile: _mobileController.text,
+      address: _addressController.text,
+      bloodGroup: _bloodGroupController.text,
+      aadhaarNumber: _aadhaarNumberController.text,
+    );
 
-    setState(() => _loading = false);
     if (!mounted) return;
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('Member saved')));
+    setState(() => _loading = false);
     Navigator.pop(context);
   }
 

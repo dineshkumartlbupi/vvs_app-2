@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:vvs_app/screens/child_screens/FamilyRegistrationScreenForm.dart';
+import 'package:vvs_app/screens/child_screens/family_regiestration/controller/family_controller.dart';
+import 'package:vvs_app/screens/child_screens/family_regiestration/screens/FamilyRegistrationScreenForm.dart';
 import 'package:vvs_app/theme/app_colors.dart';
 import 'package:vvs_app/widgets/ui_components.dart';
 
@@ -62,10 +63,7 @@ class _FamilyRegistrationScreenState extends State<FamilyRegistrationScreen> {
           ),
           Expanded(
             child: StreamBuilder<QuerySnapshot>(
-              stream: FirebaseFirestore.instance
-                  .collection('family_members')
-                  .orderBy('createdAt', descending: true)
-                  .snapshots(),
+              stream: FamilyController.getFamilyMembersStream(),
               builder: (context, snapshot) {
                 if (!snapshot.hasData) {
                   return const Center(child: CircularProgressIndicator());

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:vvs_app/screens/dashboard_screen.dart';
-import 'package:vvs_app/screens/login_screen.dart';
+import 'package:vvs_app/screens/common/screens/login_screen.dart';
 import '../theme/app_colors.dart';
 import '../widgets/ui_components.dart';
 

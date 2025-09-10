@@ -1,10 +1,11 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:vvs_app/screens/marketplace/ProductDetailScreen.dart';
-import 'package:vvs_app/screens/marketplace/ProductPostScreen.dart';
+import 'package:get/get.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:vvs_app/theme/app_colors.dart';
 import 'package:vvs_app/widgets/ui_components.dart';
+import '../controllers/marketplace_controller.dart';
+import 'ProductDetailScreen.dart';
+import 'ProductPostScreen.dart';
 
 class MarketPlaceScreen extends StatefulWidget {
   const MarketPlaceScreen({super.key});
@@ -14,16 +15,20 @@ class MarketPlaceScreen extends StatefulWidget {
 }
 
 class _MarketPlaceScreenState extends State<MarketPlaceScreen> {
-  final TextEditingController _searchController = TextEditingController();
-  String _searchQuery = '';
+  final _searchController = TextEditingController();
+  late final MarketplaceController controller;
 
   @override
   void initState() {
     super.initState();
+    controller = Get.put(MarketplaceController(), permanent: true);
+
+    controller.fetchProducts(); // Explicitly fetch all products
+
     _searchController.addListener(() {
-      setState(() {
-        _searchQuery = _searchController.text.trim().toLowerCase();
-      });
+      controller.searchQuery.value = _searchController.text
+          .trim()
+          .toLowerCase();
     });
   }
 
@@ -40,63 +45,41 @@ class _MarketPlaceScreenState extends State<MarketPlaceScreen> {
       return const Scaffold(body: Center(child: Text('Not logged in')));
     }
 
-    final userRef = FirebaseFirestore.instance
-        .collection('users')
-        .doc(user.uid);
+    return Obx(() {
+      if (controller.isLoadingMarketplace.value) {
+        return const Scaffold(body: Center(child: CircularProgressIndicator()));
+      }
 
-    return StreamBuilder<DocumentSnapshot>(
-      stream: userRef.snapshots(),
-      builder: (context, userSnap) {
-        if (!userSnap.hasData) {
-          return const Scaffold(
-            body: Center(child: CircularProgressIndicator()),
-          );
-        }
+      final products = controller.filteredProducts;
 
-        final userData = userSnap.data?.data() as Map<String, dynamic>?;
-        final isAdmin = userData?['role'] == 'admin';
-
-        return Scaffold(
-          backgroundColor: AppColors.background,
-          body: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: AppInput(
-                  controller: _searchController,
-                  label: 'Search products...',
-                ),
+      return Scaffold(
+        backgroundColor: AppColors.background,
+        appBar: AppBar(
+          title: const Text("Marketplace"),
+          centerTitle: true,
+          backgroundColor: AppColors.primary,
+        ),
+        body: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: AppInput(
+                controller: _searchController,
+                label: 'Search products...',
               ),
-              Expanded(
-                child: StreamBuilder<QuerySnapshot>(
-                  stream: FirebaseFirestore.instance
-                      .collection('marketplace')
-                      .orderBy('createdAt', descending: true)
-                      .snapshots(),
-                  builder: (context, snapshot) {
-                    if (!snapshot.hasData) {
-                      return const Center(child: CircularProgressIndicator());
-                    }
-
-                    final products = snapshot.data!.docs.where((doc) {
-                      final data = doc.data() as Map<String, dynamic>;
-                      final name = (data['name'] ?? '')
-                          .toString()
-                          .toLowerCase();
-                      return name.contains(_searchQuery);
-                    }).toList();
-
-                    if (products.isEmpty) {
-                      return const Center(child: Text('No products found.'));
-                    }
-
-                    return ListView.builder(
+            ),
+            Expanded(
+              child: products.isEmpty
+                  ? const Center(child: Text('No products found'))
+                  : ListView.builder(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       itemCount: products.length,
                       itemBuilder: (context, index) {
                         final doc = products[index];
-                        final data = doc.data() as Map<String, dynamic>;
-
+                        final raw = doc.data();
+                        final data = raw != null
+                            ? Map<String, dynamic>.from(raw)
+                            : <String, dynamic>{};
                         final imageUrl = (data['imageUrl'] ?? '').toString();
                         final name = (data['name'] ?? 'Unnamed Product')
                             .toString();
@@ -105,26 +88,24 @@ class _MarketPlaceScreenState extends State<MarketPlaceScreen> {
                             : 'Price not set';
 
                         return GestureDetector(
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) =>
-                                    ProductDetailScreen(product: data),
-                              ),
-                            );
-                          },
+                          onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) =>
+                                  ProductDetailScreen(product: data),
+                            ),
+                          ),
                           child: Container(
                             margin: const EdgeInsets.symmetric(vertical: 8),
                             padding: const EdgeInsets.all(12),
                             decoration: BoxDecoration(
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(12),
-                              boxShadow: [
+                              boxShadow: const [
                                 BoxShadow(
                                   color: Colors.black12,
                                   blurRadius: 6,
-                                  offset: const Offset(0, 2),
+                                  offset: Offset(0, 2),
                                 ),
                               ],
                             ),
@@ -169,10 +150,22 @@ class _MarketPlaceScreenState extends State<MarketPlaceScreen> {
                                     ],
                                   ),
                                 ),
-                                if (isAdmin)
+                                if (controller.isAdmin.value)
                                   Row(
                                     children: [
                                       IconButton(
+                                        onPressed: () {
+                                          controller.initializeForm(data);
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (_) => ProductPostScreen(
+                                                existingData: data,
+                                                docId: doc.id,
+                                              ),
+                                            ),
+                                          );
+                                        },
                                         icon: Container(
                                           padding: const EdgeInsets.symmetric(
                                             vertical: 6,
@@ -184,34 +177,10 @@ class _MarketPlaceScreenState extends State<MarketPlaceScreen> {
                                               12,
                                             ),
                                           ),
-                                          child: Text("Edit"),
+                                          child: const Text("Edit"),
                                         ),
-                                        onPressed: () {
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (_) => ProductPostScreen(
-                                                existingData: data,
-                                                docId: doc.id,
-                                              ),
-                                            ),
-                                          );
-                                        },
                                       ),
                                       IconButton(
-                                        icon: Container(
-                                          padding: const EdgeInsets.symmetric(
-                                            vertical: 6,
-                                            horizontal: 16,
-                                          ),
-                                          decoration: BoxDecoration(
-                                            color: Colors.red.withOpacity(0.1),
-                                            borderRadius: BorderRadius.circular(
-                                              12,
-                                            ),
-                                          ),
-                                          child: Text("Delete"),
-                                        ),
                                         onPressed: () async {
                                           final confirm = await showDialog<bool>(
                                             context: context,
@@ -247,13 +216,24 @@ class _MarketPlaceScreenState extends State<MarketPlaceScreen> {
                                               ],
                                             ),
                                           );
+
                                           if (confirm == true) {
-                                            await FirebaseFirestore.instance
-                                                .collection('marketplace')
-                                                .doc(doc.id)
-                                                .delete();
+                                            controller.deleteProduct(doc.id);
                                           }
                                         },
+                                        icon: Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            vertical: 6,
+                                            horizontal: 16,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: Colors.red.withOpacity(0.1),
+                                            borderRadius: BorderRadius.circular(
+                                              12,
+                                            ),
+                                          ),
+                                          child: const Text("Delete"),
+                                        ),
                                       ),
                                     ],
                                   ),
@@ -262,29 +242,27 @@ class _MarketPlaceScreenState extends State<MarketPlaceScreen> {
                           ),
                         );
                       },
-                    );
-                  },
-                ),
-              ),
-            ],
-          ),
-          floatingActionButton: isAdmin
-              ? FloatingActionButton(
-                  backgroundColor: AppColors.primary,
-                  child: const Icon(Icons.add, color: AppColors.card),
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) =>
-                            ProductPostScreen(existingData: {}, docId: ''),
-                      ),
-                    );
-                  },
-                )
-              : null,
-        );
-      },
-    );
+                    ),
+            ),
+          ],
+        ),
+        floatingActionButton: controller.isAdmin.value
+            ? FloatingActionButton(
+                backgroundColor: AppColors.primary,
+                child: const Icon(Icons.add, color: AppColors.card),
+                onPressed: () {
+                  controller.initializeForm({});
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) =>
+                          const ProductPostScreen(existingData: {}, docId: ''),
+                    ),
+                  );
+                },
+              )
+            : null,
+      );
+    });
   }
 }

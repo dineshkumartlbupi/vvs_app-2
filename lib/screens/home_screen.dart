@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:vvs_app/screens/child_screens/family_registration_screen.dart';
+import 'package:vvs_app/screens/child_screens/family_regiestration/screens/family_registration_screen.dart';
+//import 'package:vvs_app/screens/child_screens/family_registration_screen.dart';
 import 'package:vvs_app/widgets/bottom_footer.dart';
 import '../../theme/app_colors.dart';
 import '../../widgets/ui_components.dart';

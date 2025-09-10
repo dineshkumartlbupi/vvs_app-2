@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import '../theme/app_colors.dart';
-import '../widgets/ui_components.dart';
-import 'dashboard_screen.dart';
+import 'package:get/get.dart';
+import 'package:vvs_app/screens/common/controllers/auth_controller.dart';
+import '../../../theme/app_colors.dart';
+import '../../../widgets/ui_components.dart';
 import 'register_screen.dart';
-import '../services/auth_service.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -14,32 +14,7 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
-  final AuthService _auth = AuthService();
-
-  final TextEditingController _loginIdController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
-
-  bool _loading = false;
-
-  void _login() async {
-    if (!_formKey.currentState!.validate()) return;
-
-    setState(() => _loading = true);
-    final error = await _auth.login(
-      email: _loginIdController.text.trim(),
-      password: _passwordController.text.trim(),
-    );
-    setState(() => _loading = false);
-
-    if (error != null) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(error)));
-    } else {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const DashboardScreen()),
-      );
-    }
-  }
+  final AuthController _authController = Get.put(AuthController());
 
   @override
   Widget build(BuildContext context) {
@@ -60,30 +35,48 @@ class _LoginScreenState extends State<LoginScreen> {
                   const SizedBox(height: 8),
                   const AppSubTitle('संस्कार • एकता • सेवा'),
                   const SizedBox(height: 24),
+
+                  // Login ID
                   AppInput(
-                    controller: _loginIdController,
+                    controller: _authController.emailController,
                     label: 'Login ID',
                     keyboardType: TextInputType.emailAddress,
                     validator: (value) =>
                         value == null || value.isEmpty ? 'Please enter Login ID' : null,
                   ),
                   const SizedBox(height: 16),
+
+                  // Password
                   AppInput(
-                    controller: _passwordController,
+                    controller: _authController.passwordController,
                     label: 'Password',
                     obscureText: true,
                     validator: (value) =>
                         value == null || value.isEmpty ? 'Please enter Password' : null,
                   ),
                   const SizedBox(height: 24),
-                  _loading
-                      ? const CircularProgressIndicator()
-                      : AppButton(text: 'LOGIN', onPressed: _login),
+
+                  // Login Button
+                  Obx(
+                    () => _authController.isLoading.value
+                        ? const CircularProgressIndicator()
+                        : AppButton(
+                            text: 'LOGIN',
+                            onPressed: () async {
+                              if (_formKey.currentState!.validate()) {
+                              await  _authController.login();
+                              }
+                            },
+                          ),
+                  ),
+
                   const SizedBox(height: 16),
+
+                  // Register
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      AppLabel('New User?'),
+                      const AppLabel('New User?'),
                       AppTextButton(
                         text: 'CREATE NEW ACCOUNT',
                         onPressed: () {
@@ -96,7 +89,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         },
                       ),
                     ],
-                  )
+                  ),
                 ],
               ),
             ),

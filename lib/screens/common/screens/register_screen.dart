@@ -1,11 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:vvs_app/screens/login_screen.dart';
+import 'package:vvs_app/screens/common/screens/login_screen.dart';
 import 'package:vvs_app/widgets/app_dropdown.dart';
 import 'package:vvs_app/widgets/bottom_footer.dart';
-import '../theme/app_colors.dart';
-import '../widgets/ui_components.dart';
-import '../services/auth_service.dart';
+import '../../../theme/app_colors.dart';
+import '../../../widgets/ui_components.dart';
+import '../../../services/auth_service.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -69,7 +69,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       'bloodGroup': _bloodGroupController.text.trim(),
       'aadhaarNumber': _aadhaarNumberController.text.trim(),
       'createdAt': FieldValue.serverTimestamp(),
-       'role': 'user',
+      'role': 'user',
     };
 
     setState(() => _loading = true);
