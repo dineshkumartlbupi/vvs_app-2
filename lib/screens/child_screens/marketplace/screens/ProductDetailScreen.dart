@@ -6,21 +6,28 @@ class ProductDetailScreen extends StatelessWidget {
 
   const ProductDetailScreen({super.key, required this.product});
 
+  String capitalizeFirst(String text) {
+    if (text.isEmpty) return text;
+    return text[0].toUpperCase() + text.substring(1);
+  }
+
   @override
   Widget build(BuildContext context) {
-    final name = product['name'] ?? 'Unnamed Product';
-    final price = product['price'] != null ? '₹${product['price']}' : 'Price not set';
-    final description = product['description'] ?? '';
+    final name = capitalizeFirst(product['name'] ?? 'Unnamed Product');
+    final price = product['price'] != null
+        ? capitalizeFirst('₹${product['price']}')
+        : capitalizeFirst('Price not set');
+    final description = capitalizeFirst(product['description'] ?? '');
     final imageUrl = product['imageUrl'] ?? '';
 
     return Scaffold(
-      appBar: AppBar(title: Text("Product Details"),centerTitle: false,),
+      appBar: AppBar(title: Text("Product Details"), centerTitle: false),
       backgroundColor: AppColors.background,
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: [ 
+          children: [
             if (imageUrl.isNotEmpty)
               ClipRRect(
                 borderRadius: BorderRadius.circular(12),

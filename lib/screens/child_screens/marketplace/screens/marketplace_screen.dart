@@ -18,6 +18,11 @@ class _MarketPlaceScreenState extends State<MarketPlaceScreen> {
   final _searchController = TextEditingController();
   late final MarketplaceController controller;
 
+  String capitalizeFirst(String text) {
+    if (text.isEmpty) return text;
+    return text[0].toUpperCase() + text.substring(1);
+  }
+
   @override
   void initState() {
     super.initState();
@@ -53,12 +58,7 @@ class _MarketPlaceScreenState extends State<MarketPlaceScreen> {
       final products = controller.filteredProducts;
 
       return Scaffold(
-        backgroundColor: AppColors.background,
-        appBar: AppBar(
-          title: const Text("Marketplace"),
-          centerTitle: true,
-          backgroundColor: AppColors.primary,
-        ),
+
         body: Column(
           children: [
             Padding(
@@ -81,11 +81,10 @@ class _MarketPlaceScreenState extends State<MarketPlaceScreen> {
                             ? Map<String, dynamic>.from(raw)
                             : <String, dynamic>{};
                         final imageUrl = (data['imageUrl'] ?? '').toString();
-                        final name = (data['name'] ?? 'Unnamed Product')
-                            .toString();
+                        final name = capitalizeFirst((data['name'] ?? 'Unnamed Product').toString());
                         final price = data['price'] != null
-                            ? '₹${data['price']}'
-                            : 'Price not set';
+                            ? capitalizeFirst('₹${data['price']}')
+                            : capitalizeFirst('Price not set');
 
                         return GestureDetector(
                           onTap: () => Navigator.push(

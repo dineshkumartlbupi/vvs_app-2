@@ -79,7 +79,7 @@ class _NewsPostScreenState extends State<NewsPostScreen> {
         'title': _titleC.text.trim(),
         'content': _contentC.text.trim(),
         'imageUrl': imageUrl,
-        'timestamp': FieldValue.serverTimestamp(),
+        'createdAt': FieldValue.serverTimestamp(),
       };
 
       if (widget.docId.isEmpty) {

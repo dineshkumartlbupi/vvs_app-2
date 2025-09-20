@@ -9,10 +9,15 @@ class NewsDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final title = newsData['title'] ?? '';
-    final content = newsData['content'] ?? '';
+    String capitalizeFirst(String text) {
+      if (text.isEmpty) return text;
+      return text[0].toUpperCase() + text.substring(1);
+    }
+
+    final title = capitalizeFirst(newsData['title'] ?? '');
+    final content = capitalizeFirst(newsData['content'] ?? '');
     final imageUrl = newsData['imageUrl'] ?? '';
-    final ts = newsData['timestamp'];
+    final ts = newsData['createdAt'];
     final date = ts != null ? DateFormat('MMMM dd, yyyy').format(ts.toDate()) : '';
 
     return Scaffold(

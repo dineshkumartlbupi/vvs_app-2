@@ -1,6 +1,10 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:vvs_app/constants/app_strings.dart';
+import 'package:vvs_app/screens/child_screens/blood_donor/screen/blood_donor_form.dart';
 import 'package:vvs_app/screens/child_screens/family_regiestration/screens/family_registration_screen.dart';
-//import 'package:vvs_app/screens/child_screens/family_registration_screen.dart';
+
+import 'package:vvs_app/widgets/AutoSlidingNewsBanner.dart';
 import 'package:vvs_app/widgets/bottom_footer.dart';
 import '../../theme/app_colors.dart';
 import '../../widgets/ui_components.dart';
@@ -14,20 +18,78 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final PageController _pageController = PageController();
-  final List<Map<String, String>> _slides = [
-    {'title': 'Welcome to VVS', 'subtitle': 'संस्कार • एकता • सेवा'},
-    {'title': 'Connect. Share. Grow.', 'subtitle': ''},
+
+  final List<Map<String, String>> _slidesText = [
+    {'title': '', 'subtitle': appTitle},
+    {'title': 'Connect Share Grow', 'subtitle': ''},
     {
       'title': 'Empowering our Varshney Samaj',
       'subtitle': 'Together, we thrive.',
     },
   ];
+
+  /// News list
+  List<Map<String, String>> _slidesNews = [];
+  bool _isLoadingNews = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchNews();
+  }
+
+  Future<void> _fetchNews() async {
+    try {
+      final querySnapshot = await FirebaseFirestore.instance
+          .collection('news')
+          .orderBy('timestamp', descending: true)
+          .get();
+
+      final docs = querySnapshot.docs;
+      setState(() {
+        if (docs.isEmpty) {
+          _slidesNews = [
+            {
+              'title': 'No news available.',
+              'content': '',
+              'imageUrl': '',
+              'timestamp': '',
+            },
+          ];
+        } else {
+          _slidesNews = docs.map((doc) {
+            final data = doc.data();
+            return {
+              'title': (data['title'] ?? '').toString(),
+              'content': (data['content'] ?? '').toString(),
+              'imageUrl': (data['imageUrl'] ?? '').toString(),
+              'timestamp': (data['timestamp'] ?? '').toString(),
+            };
+          }).toList();
+        }
+        _isLoadingNews = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoadingNews = false;
+        _slidesNews = [
+          {
+            'title': '⚠️ Unable to load news at this moment',
+            'content': '',
+            'imageUrl': '',
+            'timestamp': '',
+          },
+        ];
+      });
+    }
+  }
+
   int _currentPage = 0;
   Widget _buildPageIndicator() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: List.generate(
-        _slides.length,
+        _slidesText.length,
         (i) => AnimatedContainer(
           duration: const Duration(milliseconds: 300),
           margin: const EdgeInsets.symmetric(horizontal: 4),
@@ -49,22 +111,23 @@ class _HomeScreenState extends State<HomeScreen> {
       padding: const EdgeInsets.all(16),
       child: ListView(
         children: [
+          AppTitle("Welcome to VVS"),
           // Slider
           SizedBox(
             height: 140,
             child: PageView.builder(
               controller: _pageController,
-              itemCount: _slides.length,
+              itemCount: _slidesText.length,
               onPageChanged: (i) => setState(() => _currentPage = i),
               itemBuilder: (ctx, i) {
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    AppTitle(_slides[i]['title'] ?? ''),
+                    AppTitle(_slidesText[i]['title'] ?? ''),
                     const SizedBox(height: 6),
-                    if (_slides[i]['subtitle']!.isNotEmpty)
-                      AppSubTitle(_slides[i]['subtitle']!),
+                    if (_slidesText[i]['subtitle']!.isNotEmpty)
+                      AppSubTitle(_slidesText[i]['subtitle']!),
                   ],
                 );
               },
@@ -73,18 +136,10 @@ class _HomeScreenState extends State<HomeScreen> {
           const SizedBox(height: 12),
           _buildPageIndicator(),
           const SizedBox(height: 24),
-
-          // Stats
-          _buildCard(
-            title: 'Quick Stats',
-            children: const [
-              Text('• Total Members: 1,234'),
-              Text('• Registered Families: 321'),
-              Text('• Blood Donors: 89'),
-              Text('• Events Scheduled: 4'),
-            ],
+          AutoSlidingNewsBanner(
+            slidesNews: _slidesNews,
+            isLoading: _isLoadingNews,
           ),
-
           const SizedBox(height: 24),
           // CTA Highlight
           _buildHighlightCTA(
@@ -95,6 +150,16 @@ class _HomeScreenState extends State<HomeScreen> {
               _navigateToAddMember();
             },
           ),
+          const SizedBox(height: 24),
+ _buildHighlightCTA(
+            title: 'Did You Register as a Blood Donor?',
+            subtitle: 'Help save lives by joining our donor network.',
+            buttonText: 'Become a Blood Donor',
+            onPressed: () {
+              _navigateToBloodDonorForm();
+            },
+          ),
+
           const SizedBox(height: 24),
 
           // News
@@ -132,6 +197,17 @@ class _HomeScreenState extends State<HomeScreen> {
               AppOutlinedButton(text: 'Offers & Discounts', onPressed: () {}),
             ],
           ),
+          const SizedBox(height: 24),
+          // Stats
+          _buildCard(
+            title: 'Quick Stats',
+            children: const [
+              Text('• Total Members: 1,234'),
+              Text('• Registered Families: 321'),
+              Text('• Blood Donors: 89'),
+              Text('• Events Scheduled: 4'),
+            ],
+          ),
           const BottomFooter(),
         ],
       ),
@@ -142,6 +218,13 @@ class _HomeScreenState extends State<HomeScreen> {
     Navigator.push(
       context,
       MaterialPageRoute(builder: (_) => const FamilyRegistrationScreen()),
+    );
+  }
+
+  void _navigateToBloodDonorForm() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const BloodDonorFormScreen()),
     );
   }
 
