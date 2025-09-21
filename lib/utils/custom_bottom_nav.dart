@@ -27,13 +27,7 @@ class CustomBottomNav extends StatelessWidget {
     Icons.person,
   ];
 
-  static const _labels = [
-    'Home',
-    'News',
-    'Match',
-    'Market',
-    'Profile',
-  ];
+  static const _labels = ['Home', 'News', 'Match', 'Market', 'Profile'];
 
   @override
   Widget build(BuildContext context) {
@@ -62,7 +56,9 @@ class CustomBottomNav extends StatelessWidget {
               duration: const Duration(milliseconds: 300),
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
               decoration: BoxDecoration(
-                color: isSelected ? AppColors.primary.withOpacity(0.1) : Colors.transparent,
+                color: isSelected
+                    ? AppColors.primary.withOpacity(0.1)
+                    : Colors.transparent,
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Column(
@@ -78,8 +74,12 @@ class CustomBottomNav extends StatelessWidget {
                     _labels[index],
                     style: TextStyle(
                       fontSize: 12,
-                      color: isSelected ? AppColors.primary : AppColors.subtitle,
-                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                      color: isSelected
+                          ? AppColors.primary
+                          : AppColors.subtitle,
+                      fontWeight: isSelected
+                          ? FontWeight.w600
+                          : FontWeight.w400,
                     ),
                   ),
                 ],

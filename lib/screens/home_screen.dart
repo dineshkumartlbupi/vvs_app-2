@@ -67,7 +67,6 @@ class _HomeScreenState extends State<HomeScreen> {
             } else if (raw is String) {
               ts = raw;
             }
-
             return {
               'title': (data['title'] ?? '').toString(),
               'content': (data['content'] ?? '').toString(),
@@ -163,8 +162,6 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
 
               const SizedBox(height: 24),
-
-              // CTAs (safe button sizing)
               _HighlightCTA(
                 title: 'Did You Register Your Family?',
                 subtitle: 'Keep your family connected and searchable.',
@@ -214,9 +211,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   _BulletLine('Scholarship Applications Open Until Sep 10'),
                 ],
               ),
-
               const SizedBox(height: 24),
-
               // Highlights
               _SectionHeader(title: 'Community Highlights'),
               const SizedBox(height: 8),
@@ -228,9 +223,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   _BulletLine('New Health Insurance Tie-up Announced'),
                 ],
               ),
-
               const SizedBox(height: 24),
-
               // Explore
               _SectionHeader(title: 'Explore More'),
               const SizedBox(height: 8),

@@ -1,59 +1,88 @@
+import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
-import 'package:vvs_app/services/fire_store_services.dart';
 
 class NewsBulletinController extends GetxController {
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  final FirestoreService _firestoreService = FirestoreService();
+  final FirebaseFirestore _db = FirebaseFirestore.instance;
 
-  final RxBool isAdmin = false.obs;
-  final RxList<QueryDocumentSnapshot<Map<String, dynamic>>> newsList = <QueryDocumentSnapshot<Map<String, dynamic>>>[].obs;
   final RxBool isLoading = true.obs;
+  final RxnString error = RxnString();
+  final RxBool isAdmin = false.obs;
 
-  final String userCollection = 'users';
-  final String newsCollection = 'news';
+  /// We keep original snapshots so you still have access to doc.id etc.
+  final RxList<QueryDocumentSnapshot<Map<String, dynamic>>> newsList =
+      <QueryDocumentSnapshot<Map<String, dynamic>>>[].obs;
 
   User? get currentUser => _auth.currentUser;
+
+  StreamSubscription? _userSub;
+  StreamSubscription? _newsSub;
 
   @override
   void onInit() {
     super.onInit();
-    print('[NewsBulletinController] onInit called');
-    _fetchUserRole();
-    _fetchNews();
+    _watchUserRole();
+    _watchNews();
   }
 
-  void _fetchUserRole() {
-    print('[NewsBulletinController] Fetching user role...');
-    if (currentUser == null) {
-      print('[NewsBulletinController] No current user found.');
+  void _watchUserRole() {
+    final uid = currentUser?.uid;
+    if (uid == null) {
+      isAdmin.value = false;
       return;
     }
-
-    _firestoreService
-        .listenToDocument(collection: userCollection, docId: currentUser!.uid)
-        .listen((doc) {
-      final data = doc.data();
-      print('[NewsBulletinController] User data: $data');
-      isAdmin.value = (data?['role'] == 'admin');
-      print('[NewsBulletinController] isAdmin updated: ${isAdmin.value}');
+    _userSub?.cancel();
+    _userSub = _db.collection('users').doc(uid).snapshots().listen((doc) {
+      isAdmin.value = (doc.data()?['role'] == 'admin');
+    }, onError: (_) {
+      isAdmin.value = false;
     });
   }
 
-  void _fetchNews() {
-    print('[NewsBulletinController] Fetching news list...');
-    _firestoreService.listenToCollection(collection: newsCollection).listen((snapshot) {
-      newsList.assignAll(snapshot.docs);
+  void _watchNews() {
+    _newsSub?.cancel();
+    isLoading.value = true;
+    error.value = null;
+
+    _newsSub = _db.collection('news').snapshots().listen((snap) {
+      final docs = snap.docs.toList();
+
+      // Sort by 'timestamp' OR 'createdAt' descending
+      docs.sort((a, b) {
+        final ad = _extractDate(a.data());
+        final bd = _extractDate(b.data());
+        return bd.compareTo(ad);
+      });
+
+      newsList.assignAll(docs);
       isLoading.value = false;
-      print('[NewsBulletinController] News list updated with ${snapshot.docs} items');
+    }, onError: (e) {
+      error.value = e.toString();
+      isLoading.value = false;
     });
+  }
+
+  /// Pull-to-refresh (one-shot fetch)
+  Future<void> refreshNews() async {
+    try {
+      final snap = await _db.collection('news').get();
+      final docs = snap.docs.toList();
+      docs.sort((a, b) {
+        final ad = _extractDate(a.data());
+        final bd = _extractDate(b.data());
+        return bd.compareTo(ad);
+      });
+      newsList.assignAll(docs);
+      error.value = null;
+    } catch (e) {
+      error.value = e.toString();
+    }
   }
 
   Future<void> deleteNews(String docId) async {
-    print('[NewsBulletinController] Deleting news docId: $docId');
-    await _firestoreService.deleteDocument(collection: newsCollection, docId: docId);
-    print('[NewsBulletinController] Deleted news docId: $docId');
+    await _db.collection('news').doc(docId).delete();
   }
 
   Future<void> postNews({
@@ -61,22 +90,35 @@ class NewsBulletinController extends GetxController {
     required String content,
     required String imageUrl,
   }) async {
-    print('[NewsBulletinController] Posting news: title=$title');
-    await _firestoreService.addDocument(collection: newsCollection, data: {
+    await _db.collection('news').add({
       'title': title,
       'content': content,
       'imageUrl': imageUrl,
-      'createdAt': FieldValue.serverTimestamp(),
+      'timestamp': FieldValue.serverTimestamp(), // preferred field
     });
-    print('[NewsBulletinController] Posted news: title=$title');
   }
 
   Future<void> updateNews({
     required String docId,
     required Map<String, dynamic> data,
   }) async {
-    print('[NewsBulletinController] Updating news docId: $docId with data: $data');
-    await _firestoreService.updateDocument(collection: newsCollection, docId: docId, data: data);
-    print('[NewsBulletinController] Updated news docId: $docId');
+    await _db.collection('news').doc(docId).update(data);
+  }
+
+  static DateTime _extractDate(Map<String, dynamic> m) {
+    final raw = m['timestamp'] ?? m['createdAt'];
+    if (raw is Timestamp) return raw.toDate();
+    if (raw is String) {
+      final p = DateTime.tryParse(raw);
+      if (p != null) return p;
+    }
+    return DateTime.fromMillisecondsSinceEpoch(0);
+  }
+
+  @override
+  void onClose() {
+    _userSub?.cancel();
+    _newsSub?.cancel();
+    super.onClose();
   }
 }
