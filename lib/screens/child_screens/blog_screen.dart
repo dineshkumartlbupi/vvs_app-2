@@ -86,8 +86,8 @@ class _BlogScreenState extends State<BlogScreen> {
       floatingActionButton: FloatingActionButton(
         onPressed: _showAddBlogDialog,
         backgroundColor: Theme.of(context).primaryColor,
-        child: const Icon(Icons.add),
         tooltip: 'Add Blog',
+        child: const Icon(Icons.add),
       ),
       body: ListView.separated(
         padding: const EdgeInsets.all(24),

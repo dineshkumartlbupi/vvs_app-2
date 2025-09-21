@@ -18,9 +18,7 @@ class NewsBulletinScreen extends StatelessWidget {
       stream: FirebaseAuth.instance.authStateChanges(),
       builder: (context, userSnap) {
         if (!userSnap.hasData) {
-          return const Scaffold(
-            body: Center(child: Text('Not logged in')),
-          );
+          return const Scaffold(body: Center(child: Text('Not logged in')));
         }
 
         return StreamBuilder<DocumentSnapshot>(
@@ -39,7 +37,6 @@ class NewsBulletinScreen extends StatelessWidget {
             final bool isAdmin = userData?['role'] == 'admin';
 
             return Scaffold(
-             
               body: Obx(() {
                 if (controller.isLoading.value) {
                   return const Center(child: CircularProgressIndicator());
@@ -55,18 +52,24 @@ class NewsBulletinScreen extends StatelessWidget {
                   itemCount: newsDocs.length,
                   itemBuilder: (context, index) {
                     final doc = newsDocs[index];
-                    final data = doc.data() as Map<String, dynamic>;
+                    final data = doc.data();
 
                     String capitalizeFirst(String text) {
                       if (text.isEmpty) return text;
                       return text[0].toUpperCase() + text.substring(1);
                     }
 
-                    final title = capitalizeFirst(data['title'] as String? ?? '');
-                    final content = capitalizeFirst(data['content'] as String? ?? '');
+                    final title = capitalizeFirst(
+                      data['title'] as String? ?? '',
+                    );
+                    final content = capitalizeFirst(
+                      data['content'] as String? ?? '',
+                    );
                     final imageUrl = data['imageUrl'] as String? ?? '';
 
-                    final timestamp = data['timestamp'] as Timestamp? ?? data['createdAt'] as Timestamp?;
+                    final timestamp =
+                        data['timestamp'] as Timestamp? ??
+                        data['createdAt'] as Timestamp?;
                     final date = timestamp != null
                         ? DateFormat.yMMMd().format(timestamp.toDate())
                         : '';
@@ -143,23 +146,32 @@ class NewsBulletinScreen extends StatelessWidget {
                                           const SizedBox(width: 8),
                                           GestureDetector(
                                             onTap: () {
-                                              Get.to(() => NewsPostScreen(
-                                                    existingData: data,
-                                                    docId: doc.id,
-                                                  ));
+                                              Get.to(
+                                                () => NewsPostScreen(
+                                                  existingData: data,
+                                                  docId: doc.id,
+                                                ),
+                                              );
                                             },
                                             child: Container(
-                                              padding: const EdgeInsets.symmetric(
-                                                horizontal: 8,
-                                                vertical: 4,
-                                              ),
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    horizontal: 8,
+                                                    vertical: 4,
+                                                  ),
                                               decoration: BoxDecoration(
-                                                color: Colors.blue.withOpacity(0.1),
-                                                borderRadius: BorderRadius.circular(6),
+                                                color: Colors.blue.withOpacity(
+                                                  0.1,
+                                                ),
+                                                borderRadius:
+                                                    BorderRadius.circular(6),
                                               ),
                                               child: const Text(
                                                 "Edit",
-                                                style: TextStyle(fontSize: 12, color: Colors.blue),
+                                                style: TextStyle(
+                                                  fontSize: 12,
+                                                  color: Colors.blue,
+                                                ),
                                               ),
                                             ),
                                           ),
@@ -169,39 +181,64 @@ class NewsBulletinScreen extends StatelessWidget {
                                               final confirm = await showDialog<bool>(
                                                 context: context,
                                                 builder: (context) => AlertDialog(
-                                                  title: const Text('Delete News'),
-                                                  content: const Text('Are you sure you want to delete this news item?'),
+                                                  title: const Text(
+                                                    'Delete News',
+                                                  ),
+                                                  content: const Text(
+                                                    'Are you sure you want to delete this news item?',
+                                                  ),
                                                   actions: [
                                                     TextButton(
-                                                      onPressed: () => Navigator.pop(context, false),
-                                                      child: const Text('Cancel'),
+                                                      onPressed: () =>
+                                                          Navigator.pop(
+                                                            context,
+                                                            false,
+                                                          ),
+                                                      child: const Text(
+                                                        'Cancel',
+                                                      ),
                                                     ),
                                                     TextButton(
-                                                      onPressed: () => Navigator.pop(context, true),
+                                                      onPressed: () =>
+                                                          Navigator.pop(
+                                                            context,
+                                                            true,
+                                                          ),
                                                       child: const Text(
                                                         'Delete',
-                                                        style: TextStyle(color: Colors.red),
+                                                        style: TextStyle(
+                                                          color: Colors.red,
+                                                        ),
                                                       ),
                                                     ),
                                                   ],
                                                 ),
                                               );
                                               if (confirm == true) {
-                                                await controller.deleteNews(doc.id);
+                                                await controller.deleteNews(
+                                                  doc.id,
+                                                );
                                               }
                                             },
                                             child: Container(
-                                              padding: const EdgeInsets.symmetric(
-                                                horizontal: 8,
-                                                vertical: 4,
-                                              ),
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    horizontal: 8,
+                                                    vertical: 4,
+                                                  ),
                                               decoration: BoxDecoration(
-                                                color: Colors.red.withOpacity(0.1),
-                                                borderRadius: BorderRadius.circular(6),
+                                                color: Colors.red.withOpacity(
+                                                  0.1,
+                                                ),
+                                                borderRadius:
+                                                    BorderRadius.circular(6),
                                               ),
                                               child: const Text(
                                                 "Delete",
-                                                style: TextStyle(fontSize: 12, color: Colors.red),
+                                                style: TextStyle(
+                                                  fontSize: 12,
+                                                  color: Colors.red,
+                                                ),
                                               ),
                                             ),
                                           ),
@@ -224,7 +261,9 @@ class NewsBulletinScreen extends StatelessWidget {
                       backgroundColor: AppColors.primary,
                       child: const Icon(Icons.add, color: Colors.white),
                       onPressed: () {
-                        Get.to(() => NewsPostScreen(existingData: {}, docId: ''));
+                        Get.to(
+                          () => NewsPostScreen(existingData: {}, docId: ''),
+                        );
                       },
                     )
                   : null,

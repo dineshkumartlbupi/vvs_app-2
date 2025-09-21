@@ -56,17 +56,17 @@ class _SplashScreenState extends State<SplashScreen>
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Image.asset('assets/logo.png', width: 140, height: 140),
+              Image.asset('assets/logo.png', width: 168, height: 168),
               const SizedBox(height: 32),
               const AppTitle('WELCOME TO VVS'),
               const SizedBox(height: 14),
               const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 32),
-                child: AppSubTitle('एकता • संस्कार • जन सेवा'),
+                child: AppSubTitle('एकता • संस्कार • जनसेवा'),
               ),
               const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 32),
-                child: AppSubTitle('(Unity • Values • Public Service)'),
+                child: AppSubTitle('Unity • Values • Public Service'),
               ),
             ],
           ),

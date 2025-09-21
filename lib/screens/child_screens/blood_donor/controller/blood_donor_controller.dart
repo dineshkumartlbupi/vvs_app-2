@@ -157,5 +157,6 @@ class BloodDonorController extends GetxController {
 
 /// Custom Exception when user is already donor
 class AlreadyDonorException implements Exception {
+  @override
   String toString() => "You are already registered as a donor.";
 }
