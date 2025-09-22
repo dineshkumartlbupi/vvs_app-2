@@ -1,7 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:vvs_app/screens/common/modals/auth_modal.dart';
+import 'package:vvs_app/screens/auth/modals/auth_modal.dart';
 import 'package:vvs_app/screens/dashboard_screen.dart';
 import 'package:vvs_app/services/auth_service.dart';
 

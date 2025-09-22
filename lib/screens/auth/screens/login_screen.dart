@@ -5,7 +5,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-import 'package:vvs_app/screens/common/controllers/auth_controller.dart';
+import 'package:vvs_app/screens/auth/controllers/auth_controller.dart';
 import '../../../theme/app_colors.dart';
 import '../../../widgets/ui_components.dart';
 import 'register_screen.dart';
