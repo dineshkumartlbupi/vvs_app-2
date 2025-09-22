@@ -36,7 +36,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   final List<Widget> _bottomScreens = [
     const HomeScreen(),
     NewsBulletinScreen(),
-    const MatrimonialScreen(),
+     MatrimonialScreen(),
     const MarketPlaceScreen(),
     const ProfileScreen(),
   ];
@@ -48,9 +48,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     'Marketplace',
     'Profile',
   ];
-
   int _selectedIndex = 0;
-
   final Map<String, Widget> drawerScreenMap = {
     'About Us': const AboutUsScreen(),
     'founder' : const FounderScreen(),
