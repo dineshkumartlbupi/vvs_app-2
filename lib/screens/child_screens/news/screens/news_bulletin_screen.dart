@@ -64,22 +64,22 @@ class NewsBulletinScreen extends StatelessWidget {
                     Timestamp? createdTs;
                     final t1 = raw['timestamp'];
                     final t2 = raw['createdAt'];
-                    if (t1 is Timestamp)
+                    if (t1 is Timestamp) {
                       createdTs = t1;
-                    else if (t2 is Timestamp)
+                    } else if (t2 is Timestamp)
                       createdTs = t2;
 
                     final updatedTs = raw['updatedAt'];
                     final tsUpdated = (updatedTs is Timestamp)
                         ? updatedTs
                         : null;
-                    String _fmt(Timestamp? ts) => ts == null
+                    String fmt(Timestamp? ts) => ts == null
                         ? ''
                         : DateFormat.yMMMd().format(ts.toDate());
 
                     final whenLabel = tsUpdated != null
-                        ? 'Updated on ${_fmt(tsUpdated)}'
-                        : 'Posted on ${_fmt(createdTs)}';
+                        ? 'Updated on ${fmt(tsUpdated)}'
+                        : 'Posted on ${fmt(createdTs)}';
 
                     return GestureDetector(
                       onTap: () {

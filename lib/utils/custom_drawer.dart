@@ -87,9 +87,19 @@ class _CustomDrawerState extends State<CustomDrawer> {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    AppLabel(displayName, color: Colors.white),
+                    AppLabel(
+                      displayName.length > 16
+                          ? '${displayName.substring(0, 16)}...'
+                          : displayName,
+                      color: Colors.white,
+                    ),
                     const SizedBox(height: 4),
-                    AppSubTitle(email, color: Colors.white70),
+                    AppSubTitle(
+                      email.length > 16
+                          ? '${email.substring(0, 16)}...'
+                          : email,
+                      color: Colors.white70,
+                    ),
                   ],
                 ),
               ],

@@ -66,7 +66,7 @@ class BloodDonorController extends GetxController {
       isLoading.value = false;
     }
   }
-
+  
   /// Prefill controllers when form is opened
   void prefillFormControllers({
     required TextEditingController nameCtrl,

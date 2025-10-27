@@ -62,8 +62,9 @@ class _MatrimonialScreenState extends State<MatrimonialScreen> {
     if (_gender.isNotEmpty) n++;
     if (_location.trim().isNotEmpty) n++;
     if (_ageRange.start > _kDefaultAge.start ||
-        _ageRange.end < _kDefaultAge.end)
+        _ageRange.end < _kDefaultAge.end) {
       n++;
+    }
     if (_sortBy != 'recent') n++;
     return n;
   }

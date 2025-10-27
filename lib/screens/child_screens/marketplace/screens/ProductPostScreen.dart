@@ -303,11 +303,13 @@ class _ProductPostScreenState extends State<ProductPostScreen> {
                                       ),
                                       validator: (v) {
                                         final t = (v ?? '').trim();
-                                        if (t.isEmpty)
+                                        if (t.isEmpty) {
                                           return 'Please enter quantity';
+                                        }
                                         final n = int.tryParse(t);
-                                        if (n == null || n <= 0)
+                                        if (n == null || n <= 0) {
                                           return 'Quantity must be > 0';
+                                        }
                                         return null;
                                       },
                                       textInputAction: TextInputAction.next,
@@ -400,8 +402,9 @@ class _ProductPostScreenState extends State<ProductPostScreen> {
                                   if (t.isEmpty) return 'Please enter price';
                                   final n = double.tryParse(t);
                                   if (n == null) return 'Enter a valid number';
-                                  if (n <= 0)
+                                  if (n <= 0) {
                                     return 'Price must be greater than 0';
+                                  }
                                   return null;
                                 },
                                 textInputAction: TextInputAction.next,
@@ -476,8 +479,9 @@ class _ProductPostScreenState extends State<ProductPostScreen> {
 
             // Loading overlay
             Obx(() {
-              if (!controller.isLoadingMarketplace.value)
+              if (!controller.isLoadingMarketplace.value) {
                 return const SizedBox.shrink();
+              }
               return Positioned.fill(
                 child: IgnorePointer(
                   ignoring: false,
