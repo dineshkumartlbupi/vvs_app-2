@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:vvs_app/screens/message_screen/chat_screen.dart';
 
 import 'package:vvs_app/theme/app_colors.dart';
 import 'profile_detail_screen.dart';
@@ -69,10 +70,7 @@ class _MatrimonialScreenState extends State<MatrimonialScreen> {
     return n;
   }
 
-  String _cap(String? s) {
-    if (s == null || s.isEmpty) return '';
-    return s[0].toUpperCase() + s.substring(1);
-  }
+
 
   int? _ageOf(dynamic dob) {
     DateTime? d;
@@ -502,97 +500,7 @@ class _MatrimonialScreenState extends State<MatrimonialScreen> {
       ),
     );
   }
-
-  void _openConnectSheet(Map<String, dynamic> user) {
-    final phone = (user['mobile'] ?? user['phone'] ?? '').toString().trim();
-    final name = _cap(user['name']?.toString());
-    final uid = (user['_id'] ?? '').toString();
-
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: AppColors.card,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-      ),
-      builder: (_) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const SizedBox(height: 8),
-            Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: Colors.white24,
-                borderRadius: BorderRadius.circular(4),
-              ),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              'Connect with $name',
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
-            ),
-            const SizedBox(height: 4),
-            ListTile(
-              leading: const Icon(Icons.call_rounded),
-              title: const Text('Call'),
-              onTap: phone.isEmpty
-                  ? null
-                  : () async {
-                      final uri = Uri.parse('tel:$phone');
-                      await launchUrl(uri);
-                    },
-            ),
-            ListTile(
-              leading: const Icon(Icons.calculate, color: Colors.green),
-              title: const Text('WhatsApp'),
-              onTap: phone.isEmpty
-                  ? null
-                  : () async {
-                      final digits = phone.replaceAll(RegExp(r'\D'), '');
-                      final uri = Uri.parse('https://wa.me/$digits');
-                      await launchUrl(
-                        uri,
-                        mode: LaunchMode.externalApplication,
-                      );
-                    },
-            ),
-            ListTile(
-              leading: const Icon(Icons.sms_rounded),
-              title: const Text('SMS'),
-              onTap: phone.isEmpty
-                  ? null
-                  : () async {
-                      final uri = Uri.parse('sms:$phone');
-                      await launchUrl(uri);
-                    },
-            ),
-            ListTile(
-              leading: const Icon(Icons.chat_bubble_rounded),
-              title: const Text('In-App Chat'),
-              onTap: () {
-                // Route must exist in your app routes
-                Navigator.pop(context);
-                Navigator.pushNamed(
-                  context,
-                  '/chat',
-                  arguments: {
-                    'peerId': uid,
-                    'peerName': name,
-                    'peerPhoto': user['photoUrl'],
-                    'peerPhone': phone,
-                  },
-                );
-              },
-            ),
-            const SizedBox(height: 6),
-          ],
-        ),
-      ),
-    );
-  }
-
-  @override
+ @override
   Widget build(BuildContext context) {
     final usersQuery = FirebaseFirestore.instance
         .collection('users')
@@ -774,13 +682,16 @@ class _MatrimonialScreenState extends State<MatrimonialScreen> {
                       age: age,
                       photoUrl: photo,
                       joinedAt: joined,
+                      user:u,
                       onTap: () => Navigator.push(
                         context,
                         MaterialPageRoute(
                           builder: (_) => ProfileDetailScreen(userData: u),
                         ),
                       ),
-                      onConnect: () => _openConnectSheet(u),
+                      onConnect: (){
+
+                      },
                     );
                   },
                 );
@@ -790,6 +701,8 @@ class _MatrimonialScreenState extends State<MatrimonialScreen> {
         ],
       ),
     );
+
+    
   }
 
   Widget _pill(String text, IconData icon) {
@@ -810,9 +723,18 @@ class _MatrimonialScreenState extends State<MatrimonialScreen> {
       ),
     );
   }
+  
+  String _cap(String? s) {
+    if (s == null || s.isEmpty) return '';
+    return s[0].toUpperCase() + s.substring(1);
+  }
 }
 
 class _ProfileTile extends StatelessWidget {
+    String _cap(String? s) {
+    if (s == null || s.isEmpty) return '';
+    return s[0].toUpperCase() + s.substring(1);
+  }
   const _ProfileTile({
     required this.name,
     required this.profession,
@@ -821,7 +743,8 @@ class _ProfileTile extends StatelessWidget {
     required this.photoUrl,
     required this.joinedAt,
     required this.onTap,
-    required this.onConnect,
+    required this.onConnect, 
+    required this.user,
   });
 
   final String name;
@@ -832,9 +755,15 @@ class _ProfileTile extends StatelessWidget {
   final String joinedAt;
   final VoidCallback onTap;
   final VoidCallback onConnect;
+  final Map<String, dynamic> user;
+
 
   @override
   Widget build(BuildContext context) {
+        final phone = (user['mobile'] ?? user['phone'] ?? '').toString().trim();
+    final name = _cap(user['name']?.toString());
+    final uid = (user['_id'] ?? '').toString();
+
     return Material(
       color: Colors.white,
       borderRadius: BorderRadius.circular(12),
@@ -904,14 +833,59 @@ class _ProfileTile extends StatelessWidget {
                       'Joined $joinedAt',
                       style: const TextStyle(color: Colors.grey, fontSize: 12),
                     ),
+                    SizedBox(height: 16,),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        Spacer(),
+                        GestureDetector(
+                          onTap: () async {
+                            final uri = Uri.parse('tel:$phone');
+                            await launchUrl(uri);
+                          },
+                          child: Container(
+                            padding: EdgeInsets.symmetric(horizontal: 16,vertical: 4),
+                            decoration: BoxDecoration(border: Border.all(width: 1,color: Colors.blue),borderRadius: BorderRadius.all(Radius.circular(16))),
+                            child: Row(
+                              children: [
+                                Icon(Icons.call_rounded,color: Colors.blue,),
+                                SizedBox(width: 8,),
+                                Text('Call',style: TextStyle(color: Colors.blue),),
+                              ],
+                            ),
+                          ),
+                        ),
+                         SizedBox(width:16,),
+                        GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => ChatScreen(
+                                  peerId: uid,
+                                  peerName: name,
+                                  peerPhoto: user['photoUrl']?.toString() ?? '',
+                                ),
+                              ),
+                            );
+                          },
+                          child: Container(
+                             padding: EdgeInsets.symmetric(horizontal: 16,vertical: 4),
+                            decoration: BoxDecoration(borderRadius: BorderRadius.all(Radius.circular(16)),border: Border.all(width: 1,color: AppColors.accent.withOpacity(0.4),)),
+                            child: Row(
+                              children: [
+                                Icon(Icons.chat_bubble_rounded,color: Colors.green,), SizedBox(width: 8,),
+                                Text('Start Chat',style: TextStyle(color: Colors.green),),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ],
                 ),
               ),
-              const SizedBox(width: 8),
-              IconButton.filledTonal(
-                onPressed: onConnect,
-                icon: const Icon(Icons.phone_in_talk_rounded),
-              ),
+             
             ],
           ),
         ),

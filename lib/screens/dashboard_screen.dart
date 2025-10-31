@@ -11,9 +11,9 @@ import 'package:vvs_app/screens/home_screen.dart';
 import 'package:vvs_app/screens/child_screens/profile/screens/profile_screen.dart.dart';
 import 'package:vvs_app/screens/child_screens/news/screens/news_bulletin_screen.dart';
 import 'package:vvs_app/screens/child_screens/materimonial/screens/matrimonial_screen.dart';
-import 'package:vvs_app/screens/child_screens/directory_screen.dart';
+import 'package:vvs_app/screens/child_screens/marketplace/directory_screens/directory_screen.dart';
 import 'package:vvs_app/screens/child_screens/blood_donor/screen/blood_group_screen.dart';
-import 'package:vvs_app/screens/child_screens/group_chat_screen.dart';
+import 'package:vvs_app/screens/message_screen/chat_screen.dart';
 import 'package:vvs_app/screens/child_screens/events_screen.dart';
 import 'package:vvs_app/screens/child_screens/offers_screen.dart';
 import 'package:vvs_app/screens/child_screens/payment_screen.dart';
@@ -21,6 +21,7 @@ import 'package:vvs_app/screens/child_screens/contact_us_screen.dart';
 import 'package:vvs_app/screens/child_screens/about_us_screen.dart';
 import 'package:vvs_app/screens/child_screens/terms_screen.dart';
 import 'package:vvs_app/screens/marketplace/marketplace_all_screen.dart.dart';
+import 'package:vvs_app/screens/message_screen/messages_screen.dart';
 import 'package:vvs_app/utils/custom_app_bar.dart';
 import 'package:vvs_app/utils/custom_bottom_nav.dart';
 import 'package:vvs_app/utils/custom_drawer.dart';
@@ -58,7 +59,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     'Family Registration': const FamilyRegistrationScreen(),
     'Market Place': const MarketplaceAllScreen(),
     'Blood Group & Donors': const BloodDonorsScreen(),
-    'Message(Chat)': const GroupChatScreen(),
+    'Message(Chat)': const MessagesScreen(),
     'VVS ID Card': const VvsIdCardScreen(),
     'Testimonial': const TestimonialsScreen(),
     'Blog': const BlogScreen(),

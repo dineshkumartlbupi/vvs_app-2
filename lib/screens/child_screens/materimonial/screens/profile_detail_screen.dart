@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:vvs_app/screens/message_screen/chat_screen.dart';
 import 'package:vvs_app/theme/app_colors.dart';
 
 class ProfileDetailScreen extends StatelessWidget {
@@ -207,46 +208,66 @@ class ProfileDetailScreen extends StatelessWidget {
                 style: const TextStyle(fontSize: 15, height: 1.5),
               ),
             ),
-
-            // Connect buttons
-            const SizedBox(height: 20),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(14),
-              ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      onPressed: phone.isEmpty ? null : () => _call(phone),
-                      icon: const Icon(Icons.call_rounded),
-                      label: const Text('Call'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
-                        foregroundColor: Colors.white,
-                        minimumSize: const Size(0, 44),
-                      ),
+            SizedBox(height: 16,),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                GestureDetector(
+                  onTap: () async {
+                    final uri = Uri.parse('tel:$phone');
+                    await launchUrl(uri);
+                  },
+                  child: Container(
+                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                    decoration: BoxDecoration(
+                      border: Border.all(width: 1, color: Colors.blue),
+                      borderRadius: BorderRadius.all(Radius.circular(16)),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.call_rounded, color: Colors.blue),
+                        SizedBox(width: 8),
+                        Text('Call', style: TextStyle(color: Colors.blue)),
+                      ],
                     ),
                   ),
-                  const SizedBox(width: 10),
-                  IconButton.filledTonal(
-                    onPressed: phone.isEmpty ? null : () => _whatsapp(phone),
-                    icon: const Icon(Icons.call),
+                ),
+                SizedBox(width: 16),
+                GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => ChatScreen(
+                          peerId: uid,
+                          peerName: name,
+                          peerPhoto: photoUrl ?? '',
+                        ),
+                      ),
+                    );
+                  },
+                  child: Container(
+                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.all(Radius.circular(16)),
+                      border: Border.all(
+                        width: 1,
+                        color: AppColors.accent.withOpacity(0.4),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.chat_bubble_rounded, color: Colors.green),
+                        SizedBox(width: 8),
+                        Text(
+                          'Start Chat',
+                          style: TextStyle(color: Colors.green),
+                        ),
+                      ],
+                    ),
                   ),
-                  const SizedBox(width: 6),
-                  IconButton.filledTonal(
-                    onPressed: phone.isEmpty ? null : () => _sms(phone),
-                    icon: const Icon(Icons.sms_rounded),
-                  ),
-                  const SizedBox(width: 6),
-                  IconButton.filledTonal(
-                    onPressed: () => _chat(context, uid, name, photoUrl, phone),
-                    icon: const Icon(Icons.chat_bubble_rounded),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
           ],
         ),

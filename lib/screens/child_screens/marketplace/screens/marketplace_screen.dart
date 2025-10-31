@@ -160,7 +160,6 @@ class _MarketplaceAllScreenState extends State<MarketplaceScreen>
                   ),
                   const SizedBox(height: 8),
 
-                  // Category dropdown
                   DropdownButtonFormField<String>(
                     value: tmpCat.isEmpty ? null : tmpCat,
                     decoration: const InputDecoration(
@@ -383,193 +382,156 @@ class _MarketplaceAllScreenState extends State<MarketplaceScreen>
         final bool isOwner = createdBy.isNotEmpty && createdBy == _currentUid;
         final bool canManage = _isAdmin || isOwner;
 
-        return Padding(
-          padding: EdgeInsets.only(
-            left: 16,
-            right: 16,
-            top: 12,
-            bottom: MediaQuery.of(ctx).viewInsets.bottom + 12,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: Colors.white24,
-                  borderRadius: BorderRadius.circular(4),
-                ),
-              ),
-              const SizedBox(height: 12),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: imageUrl.isNotEmpty
-                    ? Image.network(
-                        imageUrl,
-                        height: 180,
-                        width: double.infinity,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => _imgFallback(),
-                      )
-                    : Container(
-                        height: 180,
-                        width: double.infinity,
-                        color: Colors.white10,
-                        child: _imgFallback(),
-                      ),
-              ),
-              const SizedBox(height: 12),
-              Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  name,
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w800,
+        return SingleChildScrollView(
+          child: Padding(
+            padding: EdgeInsets.only(
+              left: 16,
+              right: 16,
+              top: 12,
+              bottom: MediaQuery.of(ctx).viewInsets.bottom + 12,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.white24,
+                    borderRadius: BorderRadius.circular(4),
                   ),
                 ),
-              ),
-              const SizedBox(height: 6),
-              Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  '$category${subcategory.isNotEmpty ? ' • $subcategory' : ''}',
-                  style: const TextStyle(fontSize: 14, color: Colors.black54),
-                ),
-              ),
-              const SizedBox(height: 12),
-              Text(desc, style: const TextStyle(fontSize: 14, height: 1.4)),
-              const SizedBox(height: 12),
-              if (address.isNotEmpty) ...[
-                Row(
-                  children: [
-                    const Icon(
-                      Icons.location_on_outlined,
-                      size: 18,
-                      color: Colors.grey,
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        address,
-                        style: const TextStyle(color: Colors.black54),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-              ],
-              Row(
-                children: [
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      icon: const Icon(Icons.call),
-                      label: const Text('Call'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
-                      ),
-                      onPressed: phone.isNotEmpty
-                          ? () => _launchTel(phone)
-                          : null,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      icon: const Icon(Icons.chat_bubble_outline),
-                      label: const Text('Chat'),
-                      onPressed: () {
-                        Navigator.pop(ctx);
-                      },
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      icon: const Icon(Icons.language),
-                      label: const Text('Website'),
-                      onPressed: () => _launchWebsite(website),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      icon: const Icon(Icons.map_outlined),
-                      label: const Text('Directions'),
-                      onPressed: () => _openMaps(address),
-                    ),
-                  ),
-                ],
-              ),
-              if (canManage) ...[
                 const SizedBox(height: 12),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: imageUrl.isNotEmpty
+                      ? Image.network(
+                          imageUrl,
+                          height: 180,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => _imgFallback(),
+                        )
+                      : Container(
+                          height: 180,
+                          width: double.infinity,
+                          color: Colors.white10,
+                          child: _imgFallback(),
+                        ),
+                ),
+                const SizedBox(height: 12),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    name,
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    desc,
+                    style: const TextStyle(fontSize: 14, color: Colors.black54),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                if (address.isNotEmpty) ...[
+                  Row(
+                    children: [
+                      const Icon(
+                        Icons.location_on_outlined,
+                        size: 18,
+                        color: Colors.grey,
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          address,
+                          style: const TextStyle(color: Colors.black54),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                ],
                 Row(
                   children: [
                     Expanded(
-                      child: OutlinedButton(
-                        onPressed: () {
-                          Navigator.pop(ctx);
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => AddOrganizationScreen(
-                                existingData: data,
-                                docId: docId,
-                              ),
-                            ),
-                          );
-                        },
-                        child: const Text('Edit'),
-                      ),
+                      child: Text(phone),
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: () async {
-                          final confirm = await showDialog<bool>(
-                            context: context,
-                            builder: (_) => AlertDialog(
-                              title: const Text('Delete'),
-                              content: const Text(
-                                'Do you want to delete this organisation?',
-                              ),
-                              actions: [
-                                TextButton(
-                                  onPressed: () =>
-                                      Navigator.pop(context, false),
-                                  child: const Text('Cancel'),
-                                ),
-                                TextButton(
-                                  onPressed: () => Navigator.pop(context, true),
-                                  child: const Text(
-                                    'Delete',
-                                    style: TextStyle(color: Colors.red),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          );
-                          if (confirm == true) {
-                            Navigator.pop(ctx);
-                            await _deleteDoc(docId);
-                          }
-                        },
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: Colors.red,
-                        ),
-                        child: const Text('Delete'),
-                      ),
-                    ),
+                    
                   ],
                 ),
+               
+                if (canManage) ...[
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () {
+                            Navigator.pop(ctx);
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => AddOrganizationScreen(
+                                  existingData: data,
+                                  docId: docId,
+                                ),
+                              ),
+                            );
+                          },
+                          child: const Text('Edit'),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () async {
+                            final confirm = await showDialog<bool>(
+                              context: context,
+                              builder: (_) => AlertDialog(
+                                title: const Text('Delete'),
+                                content: const Text(
+                                  'Do you want to delete this organisation?',
+                                ),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () =>
+                                        Navigator.pop(context, false),
+                                    child: const Text('Cancel'),
+                                  ),
+                                  TextButton(
+                                    onPressed: () => Navigator.pop(context, true),
+                                    child: const Text(
+                                      'Delete',
+                                      style: TextStyle(color: Colors.red),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                            if (confirm == true) {
+                              Navigator.pop(ctx);
+                              await _deleteDoc(docId);
+                            }
+                          },
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: Colors.red,
+                          ),
+                          child: const Text('Delete'),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+                const SizedBox(height: 12),
               ],
-              const SizedBox(height: 12),
-            ],
+            ),
           ),
         );
       },
@@ -591,17 +553,19 @@ class _MarketplaceAllScreenState extends State<MarketplaceScreen>
 
     return GestureDetector(
       onTap: () => _showDetailSheet(context, doc.id, data),
-      child: Container(
+      child: 
+      Container(
         margin: const EdgeInsets.symmetric(vertical: 6),
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(12),
+          border: Border.all(width: 1,color: AppColors.primary.withOpacity(0.3)),
           boxShadow: const [
             BoxShadow(
               color: Colors.black12,
-              blurRadius: 6,
-              offset: Offset(0, 2),
+              blurRadius: 1,
+              offset: Offset(0, 1),
             ),
           ],
         ),
@@ -676,11 +640,27 @@ class _MarketplaceAllScreenState extends State<MarketplaceScreen>
                                 );
                               },
                               child: Container(
-                                padding: EdgeInsets.symmetric(horizontal: 16,vertical: 4),
-                                decoration: BoxDecoration(color: AppTheme.light.primaryColor,borderRadius: BorderRadius.all(Radius.circular(12)),border: Border.all(width: 1,color: Colors.grey)),
-                                child: Text("Edit",style: TextStyle(color: Colors.white),)),
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 4,
+                                ),
+                                decoration: BoxDecoration(
+                          
+                                  borderRadius: BorderRadius.all(
+                                    Radius.circular(12),
+                                  ),
+                                  border: Border.all(
+                                    width: 1,
+                                           color: AppTheme.light.primaryColor.withOpacity(0.4),
+                                  ),
+                                ),
+                                child: Text(
+                                  "Edit",
+                                  style: TextStyle(        color: AppTheme.light.primaryColor,fontWeight: FontWeight.bold),
+                                ),
+                              ),
                             ),
-                            SizedBox(width: 8,),
+                            SizedBox(width: 8),
                             GestureDetector(
                               onTap: () async {
                                 final confirm = await showDialog<bool>(
@@ -710,9 +690,25 @@ class _MarketplaceAllScreenState extends State<MarketplaceScreen>
                                 if (confirm == true) await _deleteDoc(doc.id);
                               },
                               child: Container(
-                                    padding: EdgeInsets.symmetric(horizontal: 16,vertical: 4),
-                                decoration: BoxDecoration(color: Colors.red,borderRadius: BorderRadius.all(Radius.circular(12)),border: Border.all(width: 1,color: Colors.grey)),
-                                child: Text("Delete",style: TextStyle(color: Colors.white),)),
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 4,
+                                ),
+                                decoration: BoxDecoration(
+                            
+                                  borderRadius: BorderRadius.all(
+                                    Radius.circular(12),
+                                  ),
+                                  border: Border.all(
+                                    width: 1,
+                                          color: Colors.red.withOpacity(0.4),
+                                  ),
+                                ),
+                                child: Text(
+                                  "Delete",
+                                  style: TextStyle(      color: Colors.red,fontWeight: FontWeight.bold),
+                                ),
+                              ),
                             ),
                           ],
                         ),
@@ -733,7 +729,7 @@ class _MarketplaceAllScreenState extends State<MarketplaceScreen>
     final cat = (data['category'] ?? '').toString();
     final sub = (data['subcategory'] ?? '').toString();
     final imageUrl = (data['imageUrl'] ?? '').toString();
-    
+
     return GestureDetector(
       onTap: () => _showDetailSheet(context, doc.id, data),
       child: Container(
@@ -817,51 +813,6 @@ class _MarketplaceAllScreenState extends State<MarketplaceScreen>
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             child: Column(
               children: [
-                // Active filter chips
-                if (_categoryFilter.isNotEmpty || _subcategoryFilter.isNotEmpty)
-                  Container(
-                    height: 40,
-                    alignment: Alignment.centerLeft,
-                    child: ListView(
-                      scrollDirection: Axis.horizontal,
-                      children: [
-                        if (_categoryFilter.isNotEmpty)
-                          Padding(
-                            padding: const EdgeInsets.only(right: 8),
-                            child: InputChip(
-                              label: Text(_categoryFilter),
-                              onDeleted: () => setState(() {
-                                _categoryFilter = '';
-                                _subcategoryFilter = '';
-                              }),
-                            ),
-                          ),
-                        if (_subcategoryFilter.isNotEmpty)
-                          Padding(
-                            padding: const EdgeInsets.only(right: 8),
-                            child: InputChip(
-                              label: Text(_subcategoryFilter),
-                              onDeleted: () =>
-                                  setState(() => _subcategoryFilter = ''),
-                            ),
-                          ),
-                        Padding(
-                          padding: const EdgeInsets.only(right: 8),
-                          child: ActionChip(
-                            label: const Text('Clear all'),
-                            onPressed: () => setState(() {
-                              _categoryFilter = '';
-                              _subcategoryFilter = '';
-                            }),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                const SizedBox(height: 8),
-
-                // Results
                 Expanded(
                   child: _isGrid
                       ? GridView.builder(
@@ -903,11 +854,12 @@ class _MarketplaceAllScreenState extends State<MarketplaceScreen>
       backgroundColor: AppColors.background,
       appBar: AppBar(
         backgroundColor: AppColors.primary,
-        // title: const Text('Organisations'),
         toolbarHeight: 0,
         bottom: TabBar(
           controller: _tabController,
           indicatorColor: Colors.white,
+          labelColor: Colors.white, // active tab text color
+          unselectedLabelColor: Colors.white70, // inactive tab text color
           tabs: const [
             Tab(text: 'All MarketPlace'),
             Tab(text: 'My MarketPlace'),
@@ -919,127 +871,210 @@ class _MarketplaceAllScreenState extends State<MarketplaceScreen>
           // Search & quick filters row
           Padding(
             padding: const EdgeInsets.fromLTRB(12, 12, 12, 6),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Container(
+            child: Material(
+              color: Colors.white,
+              shadowColor: Colors.black.withOpacity(0.15),
+              borderRadius: BorderRadius.circular(14),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(10),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.04),
+                            blurRadius: 6,
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        children: [
+                          const SizedBox(width: 8),
+                          const Icon(Icons.search_rounded, color: Colors.grey),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: TextField(
+                              controller: _searchCtrl,
+                              onChanged: (v) => setState(
+                                () => _search = v.trim().toLowerCase(),
+                              ),
+                              decoration: const InputDecoration(
+                                hintText: 'Search name or category',
+                                border: InputBorder.none,
+                                isDense: true,
+                              ),
+                            ),
+                          ),
+                          if (_searchCtrl.text.isNotEmpty)
+                            IconButton(
+                              icon: const Icon(Icons.clear_rounded, size: 20),
+                              onPressed: () => setState(() {
+                                _searchCtrl.clear();
+                                _search = '';
+                              }),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  // Divider
+                  SizedBox(
+                    height: 40,
+                    child: VerticalDivider(
+                      width: 1,
+                      color: Colors.black12,
+                      thickness: 1,
+                    ),
+                  ),
+
+                  // view toggle
+                  Container(
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(10),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.04),
-                          blurRadius: 6,
-                        ),
-                      ],
                     ),
-                    child: Row(
-                      children: [
-                        const SizedBox(width: 8),
-                        const Icon(Icons.search_rounded, color: Colors.grey),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: TextField(
-                            controller: _searchCtrl,
-                            onChanged: (v) => setState(
-                              () => _search = v.trim().toLowerCase(),
-                            ),
-                            decoration: const InputDecoration(
-                              hintText:
-                                  'Search name, category, subcategory, phone...',
-                              border: InputBorder.none,
-                              isDense: true,
-                            ),
-                          ),
-                        ),
-                        if (_searchCtrl.text.isNotEmpty)
-                          IconButton(
-                            icon: const Icon(Icons.clear_rounded, size: 20),
-                            onPressed: () => setState(() {
-                              _searchCtrl.clear();
-                              _search = '';
-                            }),
-                          ),
-                      ],
+                    child: IconButton(
+                      onPressed: _openFilters,
+                      icon: const Icon(Icons.tune_rounded),
                     ),
                   ),
-                ),
-                const SizedBox(width: 8),
-
-                // view toggle
-                Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: IconButton(
-                    onPressed: _openFilters,
-                    icon: const Icon(Icons.tune_rounded),
-                  ),
-                ),
-
-                //  Container(
-                //   decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(10)),
-                //   child: IconButton(
-                //     onPressed: () => setState(() => _isGrid = !_isGrid),
-                //     icon: Icon(_isGrid ? Icons.view_list_rounded : Icons.grid_view_rounded),
-                //     tooltip: _isGrid ? 'List view' : 'Grid view',
-                //   ),
-                // ),
-              ],
+                ],
+              ),
             ),
           ),
 
+          // category quick chips
           // category quick chips
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             child: Row(
               children: [
-                ChoiceChip(
-                  label: const Text('All MarketPlace'),
-                  selected: _categoryFilter.isEmpty,
-                  onSelected: (_) => setState(() {
+                // "All Marketplace"
+                GestureDetector(
+                  onTap: () => setState(() {
                     _categoryFilter = '';
                     _subcategoryFilter = '';
                   }),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 8,
+                    ),
+                    decoration: BoxDecoration(
+                      color: _categoryFilter.isEmpty
+                          ? AppColors.primary.withOpacity(0.15)
+                          : Colors.transparent,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: _categoryFilter.isEmpty
+                            ? AppColors.primary
+                            : Colors.grey.withOpacity(0.4),
+                      ),
+                    ),
+                    child: Text(
+                      'All MarketPlace',
+                      style: TextStyle(
+                        color: _categoryFilter.isEmpty
+                            ? AppColors.primary
+                            : Colors.black,
+                        fontWeight: _categoryFilter.isEmpty
+                            ? FontWeight.bold
+                            : FontWeight.normal,
+                      ),
+                    ),
+                  ),
                 ),
                 const SizedBox(width: 8),
+
+                // Main categories
                 ...categories.map((c) {
                   final selected = _categoryFilter == c;
                   return Padding(
                     padding: const EdgeInsets.only(right: 8),
-                    child: ChoiceChip(
-                      label: Text(c),
-                      selected: selected,
-                      onSelected: (_) => setState(() {
+                    child: GestureDetector(
+                      onTap: () => setState(() {
                         if (selected) {
                           _categoryFilter = '';
                           _subcategoryFilter = '';
                         } else {
                           _categoryFilter = c;
-                          _subcategoryFilter =
-                              ''; // clear sub when category changes
+                          _subcategoryFilter = '';
                         }
                       }),
-                      selectedColor: AppColors.primary.withOpacity(0.14),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 8,
+                        ),
+                        decoration: BoxDecoration(
+                          color: selected
+                              ? AppColors.primary.withOpacity(0.15)
+                              : Colors.transparent,
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: selected
+                                ? AppColors.primary
+                                : Colors.grey.withOpacity(0.4),
+                          ),
+                        ),
+                        child: Text(
+                          c,
+                          style: TextStyle(
+                            color: selected ? AppColors.primary : Colors.black,
+                            fontWeight: selected
+                                ? FontWeight.bold
+                                : FontWeight.normal,
+                          ),
+                        ),
+                      ),
                     ),
                   );
                 }),
+
+                // Subcategories
                 if (_categoryFilter.isNotEmpty &&
                     (_catMap[_categoryFilter] ?? []).isNotEmpty)
                   const SizedBox(width: 8),
-                // subcategory scroll when a category selected
+
                 if (_categoryFilter.isNotEmpty)
                   ...(_catMap[_categoryFilter] ?? []).map((s) {
                     final sel = _subcategoryFilter == s;
                     return Padding(
                       padding: const EdgeInsets.only(right: 8),
-                      child: InputChip(
-                        label: Text(s),
-                        selected: sel,
-                        onSelected: (_) =>
-                            setState(() => _subcategoryFilter = sel ? '' : s),
+                      child: GestureDetector(
+                        onTap: () => setState(() {
+                          _subcategoryFilter = sel ? '' : s;
+                        }),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 8,
+                          ),
+                          decoration: BoxDecoration(
+                            color: sel
+                                ? AppColors.primary.withOpacity(0.15)
+                                : Colors.transparent,
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                              color: sel
+                                  ? AppColors.primary
+                                  : Colors.grey.withOpacity(0.4),
+                            ),
+                          ),
+                          child: Text(
+                            s,
+                            style: TextStyle(
+                              color: sel ? AppColors.primary : Colors.black,
+                              fontWeight: sel
+                                  ? FontWeight.bold
+                                  : FontWeight.normal,
+                            ),
+                          ),
+                        ),
                       ),
                     );
                   }),
