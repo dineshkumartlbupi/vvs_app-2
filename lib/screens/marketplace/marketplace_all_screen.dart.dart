@@ -66,8 +66,11 @@ class _MarketplaceAllScreenState extends State<MarketplaceAllScreen>
     if (_categoryFilter.isNotEmpty) q = q.where('category', isEqualTo: _categoryFilter);
     if (_subcategoryFilter.isNotEmpty) q = q.where('subcategory', isEqualTo: _subcategoryFilter);
 
-    if (_sortBy == 'nameAsc') q = q.orderBy('name');
-    else q = q.orderBy('createdAt', descending: true);
+    if (_sortBy == 'nameAsc') {
+      q = q.orderBy('name');
+    } else {
+      q = q.orderBy('createdAt', descending: true);
+    }
 
     return q;
   }
@@ -614,7 +617,7 @@ class _MarketplaceAllScreenState extends State<MarketplaceAllScreen>
                   selectedColor: AppColors.primary.withOpacity(0.14),
                 ),
               );
-            }).toList(),
+            }),
             if (_categoryFilter.isNotEmpty && (_catMap[_categoryFilter] ?? []).isNotEmpty) const SizedBox(width: 8),
             // subcategory scroll when a category selected
             if (_categoryFilter.isNotEmpty)
@@ -628,7 +631,7 @@ class _MarketplaceAllScreenState extends State<MarketplaceAllScreen>
                     onSelected: (_) => setState(() => _subcategoryFilter = sel ? '' : s),
                   ),
                 );
-              }).toList(),
+              }),
           ]),
         ),
 

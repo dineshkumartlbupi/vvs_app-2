@@ -23,7 +23,7 @@ class _MarketplaceAllScreenState extends State<MarketplaceScreen>
   String _sortBy = 'recent'; // recent | nameAsc
   bool _isAdmin = false;
   late final TabController _tabController;
-  bool _isGrid = false;
+  final bool _isGrid = false;
   String get _currentUid => FirebaseAuth.instance.currentUser?.uid ?? '';
 
   // Local category->subcategory map (can move to controller/Firestore)
@@ -54,8 +54,9 @@ class _MarketplaceAllScreenState extends State<MarketplaceScreen>
         .doc(user.uid)
         .get();
     final data = snap.data();
-    if (mounted)
+    if (mounted) {
       setState(() => _isAdmin = data != null && data['role'] == 'admin');
+    }
   }
 
   Query _orgsQuery({required bool onlyMine}) {
@@ -71,10 +72,11 @@ class _MarketplaceAllScreenState extends State<MarketplaceScreen>
       q = q.where('subcategory', isEqualTo: _subcategoryFilter);
     }
 
-    if (_sortBy == 'nameAsc')
+    if (_sortBy == 'nameAsc') {
       q = q.orderBy('name');
-    else
+    } else {
       q = q.orderBy('createdAt', descending: true);
+    }
 
     return q;
   }
@@ -278,15 +280,17 @@ class _MarketplaceAllScreenState extends State<MarketplaceScreen>
           .collection(kOrganizationsCollection)
           .doc(id)
           .delete();
-      if (mounted)
+      if (mounted) {
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(const SnackBar(content: Text('Deleted')));
+      }
     } catch (e) {
-      if (mounted)
+      if (mounted) {
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text('Delete failed: $e')));
+      }
     }
   }
 
@@ -299,19 +303,21 @@ class _MarketplaceAllScreenState extends State<MarketplaceScreen>
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri);
     } else {
-      if (mounted)
+      if (mounted) {
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(const SnackBar(content: Text('Cannot open dialer')));
+      }
     }
   }
 
   Future<void> _launchWebsite(String url) async {
     if (url.isEmpty) {
-      if (mounted)
+      if (mounted) {
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(const SnackBar(content: Text('No website provided')));
+      }
       return;
     }
     var uri = Uri.tryParse(url) ?? Uri();
@@ -319,19 +325,21 @@ class _MarketplaceAllScreenState extends State<MarketplaceScreen>
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     } else {
-      if (mounted)
+      if (mounted) {
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(const SnackBar(content: Text('Cannot open website')));
+      }
     }
   }
 
   Future<void> _openMaps(String address) async {
     if (address.isEmpty) {
-      if (mounted)
+      if (mounted) {
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(const SnackBar(content: Text('No address available')));
+      }
       return;
     }
     final encoded = Uri.encodeComponent(address);
@@ -341,10 +349,11 @@ class _MarketplaceAllScreenState extends State<MarketplaceScreen>
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     } else {
-      if (mounted)
+      if (mounted) {
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(const SnackBar(content: Text('Cannot open maps')));
+      }
     }
   }
 
@@ -724,7 +733,7 @@ class _MarketplaceAllScreenState extends State<MarketplaceScreen>
     final cat = (data['category'] ?? '').toString();
     final sub = (data['subcategory'] ?? '').toString();
     final imageUrl = (data['imageUrl'] ?? '').toString();
-
+    
     return GestureDetector(
       onTap: () => _showDetailSheet(context, doc.id, data),
       child: Container(
@@ -790,14 +799,16 @@ class _MarketplaceAllScreenState extends State<MarketplaceScreen>
       stream: _orgsQuery(onlyMine: onlyMine).snapshots(),
       builder: (context, snap) {
         if (snap.hasError) return Center(child: Text('Error: ${snap.error}'));
-        if (snap.connectionState == ConnectionState.waiting)
+        if (snap.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
+        }
 
         final docs = snap.data!.docs
             .where((d) => _matchesSearch(d.data() as Map<String, dynamic>))
             .toList();
-        if (docs.isEmpty)
+        if (docs.isEmpty) {
           return const Center(child: Text('No organisations found'));
+        }
 
         // show chips for active filters above list
         return RefreshIndicator(
@@ -1014,7 +1025,7 @@ class _MarketplaceAllScreenState extends State<MarketplaceScreen>
                       selectedColor: AppColors.primary.withOpacity(0.14),
                     ),
                   );
-                }).toList(),
+                }),
                 if (_categoryFilter.isNotEmpty &&
                     (_catMap[_categoryFilter] ?? []).isNotEmpty)
                   const SizedBox(width: 8),
@@ -1031,7 +1042,7 @@ class _MarketplaceAllScreenState extends State<MarketplaceScreen>
                             setState(() => _subcategoryFilter = sel ? '' : s),
                       ),
                     );
-                  }).toList(),
+                  }),
               ],
             ),
           ),

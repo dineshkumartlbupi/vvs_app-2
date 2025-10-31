@@ -13,8 +13,6 @@ import 'package:vvs_app/screens/child_screens/news/screens/news_bulletin_screen.
 import 'package:vvs_app/screens/child_screens/materimonial/screens/matrimonial_screen.dart';
 import 'package:vvs_app/screens/child_screens/directory_screen.dart';
 import 'package:vvs_app/screens/child_screens/blood_donor/screen/blood_group_screen.dart';
-import 'package:vvs_app/screens/child_screens/healthcare_screen.dart';
-import 'package:vvs_app/screens/child_screens/education_screen.dart';
 import 'package:vvs_app/screens/child_screens/group_chat_screen.dart';
 import 'package:vvs_app/screens/child_screens/events_screen.dart';
 import 'package:vvs_app/screens/child_screens/offers_screen.dart';
