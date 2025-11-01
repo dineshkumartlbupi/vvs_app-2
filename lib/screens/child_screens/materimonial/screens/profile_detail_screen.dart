@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:vvs_app/screens/message_screen/chat_screen.dart';
+import 'package:vvs_app/services/chat_service.dart';
 import 'package:vvs_app/theme/app_colors.dart';
 
 class ProfileDetailScreen extends StatelessWidget {
@@ -208,7 +209,7 @@ class ProfileDetailScreen extends StatelessWidget {
                 style: const TextStyle(fontSize: 15, height: 1.5),
               ),
             ),
-            SizedBox(height: 16,),
+            SizedBox(height: 16),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -234,7 +235,13 @@ class ProfileDetailScreen extends StatelessWidget {
                 ),
                 SizedBox(width: 16),
                 GestureDetector(
-                  onTap: () {
+                  onTap: () async {
+                    await ChatService.ensureConversation(
+                      peerId: uid,
+                      peerName: name,
+                      peerPhoto: userData['photoUrl']?.toString() ?? '',
+                      initialMessage: '',
+                    );
                     Navigator.push(
                       context,
                       MaterialPageRoute(

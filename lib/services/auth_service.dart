@@ -5,7 +5,8 @@ import 'package:vvs_app/screens/auth/modals/auth_modal.dart';
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
- 
+
+  // 🔹 Register new user
   Future<String?> register({
     required String email,
     required String password,
@@ -13,41 +14,49 @@ class AuthService {
   }) async {
     try {
       final userCredential = await _auth.createUserWithEmailAndPassword(
-        email: email,
-        password: password,
+        email: email.trim(),
+        password: password.trim(),
       );
-      //Save user data in 'users' collection
-      await _firestore
-          .collection('users')
-          .doc(userCredential.user!.uid)
-          .set(userData);
+
+      final uid = userCredential.user!.uid;
+
+      await _firestore.collection('users').doc(uid).set({
+        ...userData,
+        'uid': uid,
+        'email': email,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+
       return null;
     } on FirebaseAuthException catch (e) {
       return e.message;
+    } catch (e) {
+      return e.toString();
     }
   }
 
-  Future<String?> login({required LoginRequest logindata}) async
-  
-   {
-    print("i am from login service");
-    print(logindata.email);
-    print(logindata.password);
-
+  // 🔹 Login existing user
+  Future<String?> login({
+    required LoginRequest logindata,
+  }) async {
     try {
       await _auth.signInWithEmailAndPassword(
-        email: logindata.email,
-        password: logindata.password,
+        email: logindata.email.trim(),
+        password: logindata.password.trim(),
       );
       return null;
     } on FirebaseAuthException catch (e) {
       return e.message;
+    } catch (e) {
+      return e.toString();
     }
   }
 
+  // 🔹 Sign out
   Future<void> signOut() async {
     await _auth.signOut();
   }
 
+  // 🔹 Auth state stream
   Stream<User?> authState() => _auth.authStateChanges();
 }

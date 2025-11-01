@@ -18,7 +18,7 @@ class HealthCareScreen extends StatelessWidget {
             AppTitle('Health & Medical Support'),
             SizedBox(height: 16),
             Text(
-              'The Varshney Vaishy Samaj (VVS) Health Care initiative is dedicated to ensuring the well-being of our community members. '
+              'The Varshney Vaishy Samaj Health Care initiative is dedicated to ensuring the well-being of our community members. '
               'We believe that a healthy community is a strong community.',
               style: TextStyle(fontSize: 14, height: 1.6),
             ),
@@ -37,7 +37,7 @@ class HealthCareScreen extends StatelessWidget {
             AppTitle('Be a Donor'),
             SizedBox(height: 8),
             Text(
-              'If you’re willing to donate blood or volunteer in medical initiatives, register with us and become a health hero within VVS.',
+              'If you’re willing to donate blood or volunteer in medical initiatives, register with us and become a health hero within Varshney One.',
               style: TextStyle(fontSize: 14, height: 1.6),
             ),
             SizedBox(height: 24),

@@ -1,4 +1,4 @@
-package com.example.vvs_app
+package com.syniso.vvs
 
 import io.flutter.embedding.android.FlutterActivity
 

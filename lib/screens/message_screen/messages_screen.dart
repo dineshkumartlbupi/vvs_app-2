@@ -2,6 +2,7 @@
 import 'package:firebase_database/firebase_database.dart' as rtdb;
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:vvs_app/screens/message_screen/widget/MessageListItem.dart';
 import 'package:vvs_app/theme/app_colors.dart';
 import 'package:vvs_app/services/chat_service.dart';
 // If you don't use Firestore here, remove this line
@@ -40,8 +41,11 @@ class _MessagesScreenState extends State<MessagesScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(title: const Text('Messages'), backgroundColor: AppColors.primary),
+      backgroundColor: const Color.fromRGBO(255, 243, 224, 1),
+      appBar: AppBar(
+        title: const Text('Messages'),
+        backgroundColor: AppColors.primary,
+      ),
       body: StreamBuilder<rtdb.DatabaseEvent>(
         stream: _conversationsQuery.onValue,
         builder: (context, snap) {
@@ -52,7 +56,9 @@ class _MessagesScreenState extends State<MessagesScreen> {
             return const Center(child: Text('No conversations yet'));
           }
 
-          final map = Map<String, dynamic>.from(snap.data!.snapshot.value as Map);
+          final map = Map<String, dynamic>.from(
+            snap.data!.snapshot.value as Map,
+          );
           final items = <Map<String, dynamic>>[];
 
           map.forEach((k, v) {
@@ -79,26 +85,12 @@ class _MessagesScreenState extends State<MessagesScreen> {
               final last = it['lastMessage'] ?? '';
               final ts = _formatTs(it['timestamp']);
 
-              return ListTile(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => ChatScreen(
-                        peerId: peerId,
-                        peerName: peerName,
-                        peerPhoto: peerPhoto,
-                      ),
-                    ),
-                  );
-                },
-                leading: CircleAvatar(
-                  backgroundImage: (peerPhoto.isNotEmpty) ? NetworkImage(peerPhoto) : null,
-                  child: (peerPhoto.isEmpty) ? const Icon(Icons.person) : null,
-                ),
-                title: Text(peerName),
-                subtitle: Text(last.toString(), maxLines: 1, overflow: TextOverflow.ellipsis),
-                trailing: Text(ts, style: const TextStyle(fontSize: 11, color: Colors.grey)),
+              return Messagelistitem(
+                peerId: peerId,
+                peerName: peerName,
+                peerPhoto: peerPhoto,
+                lastMessage: last,
+                timestamp: ts,
               );
             },
           );

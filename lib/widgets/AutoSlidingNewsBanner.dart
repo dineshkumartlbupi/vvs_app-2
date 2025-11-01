@@ -162,7 +162,7 @@ class _AutoSlidingNewsBannerState extends State<AutoSlidingNewsBanner>
                                               const SizedBox(height: 6),
                                               Text(
                                                 title.isEmpty
-                                                    ? 'VVS Update'
+                                                    ? 'Varshney One Update'
                                                     : title,
                                                 style: const TextStyle(
                                                   fontSize: 18,

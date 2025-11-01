@@ -14,84 +14,90 @@ class AuthController extends GetxController {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
 
+  // 🔹 Login Function
   Future<void> login() async {
-    if (emailController.text.isEmpty || passwordController.text.isEmpty) {
-      //customWidget("type","message")
-      Get.snackbar(
-        "Error",
-        "Please enter both Login ID and Password",
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.shade600,
-        colorText: Colors.white,
-      );
+    final email = emailController.text.trim();
+    final password = passwordController.text.trim();
+
+    if (email.isEmpty || password.isEmpty) {
+      Get.snackbar("Error", "Please enter both Login ID and Password",
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.red,
+          colorText: Colors.white);
       return;
     }
 
+    isLoading.value = true;
     try {
-      isLoading.value = true;
-
-      final LoginRequest logindata = LoginRequest(
-        email: emailController.text.trim(),
-        password: passwordController.text.trim(),
+      final response = await _authService.login(
+        logindata: LoginRequest(email: email, password: password),
       );
-
-      await _authService.login(logindata: logindata);
 
       isLoading.value = false;
 
-      Get.snackbar(
-        "Success",
-        "Login Successful",
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.green.shade600,
-        colorText: Colors.white,
-      );
-
-      Get.offAll(() => const DashboardScreen());
-    } on FirebaseAuthException catch (e) {
-      isLoading.value = false;
-
-      String errorMessage;
-      switch (e.code) {
-        case "user-not-found":
-          errorMessage = "No user found with this email.";
-          break;
-        case "wrong-password":
-          errorMessage = "Incorrect password.";
-          break;
-        case "invalid-email":
-          errorMessage = "Invalid email format.";
-          break;
-        case "user-disabled":
-          errorMessage = "This account has been disabled.";
-          break;
-        default:
-          errorMessage = "Login failed. Please try again.";
+      if (response == null) {
+        // ✅ Login success
+        Get.offAll(() => const DashboardScreen());
+        Get.snackbar("Success", "Login Successful",
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: Colors.green,
+            colorText: Colors.white);
+      } else {
+        Get.snackbar("Login Failed", response,
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: Colors.red,
+            colorText: Colors.white);
       }
-
-      message.value = errorMessage;
-
-      Get.snackbar(
-        "Login Failed",
-        errorMessage,
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.shade600,
-        colorText: Colors.white,
-      );
     } catch (e) {
-      
       isLoading.value = false;
-      message.value = e.toString();
+      Get.snackbar("Error", e.toString(),
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.red,
+          colorText: Colors.white);
+    }
+  }
 
-      Get.snackbar(
-        "Error",
-        e.toString(),
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.shade600,
-        colorText: Colors.white,
+  // 🔹 Register Function
+  Future<void> register(Map<String, dynamic> userData) async {
+    final email = userData['email']?.toString().trim() ?? '';
+    final password = userData['password']?.toString().trim() ?? '';
+
+    if (email.isEmpty || password.isEmpty) {
+      Get.snackbar("Error", "Please fill in all fields",
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.red,
+          colorText: Colors.white);
+      return;
+    }
+
+    isLoading.value = true;
+    try {
+      final response = await _authService.register(
+        email: email,
+        password: password,
+        userData: userData,
       );
 
-      print("Error from auth controller ${e.toString()}");
+      isLoading.value = false;
+
+      if (response == null) {
+        Get.offAll(() => const DashboardScreen());
+        Get.snackbar("Success", "Registration Successful",
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: Colors.green,
+            colorText: Colors.white);
+      } else {
+        Get.snackbar("Registration Failed", response,
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: Colors.red,
+            colorText: Colors.white);
+      }
+    } catch (e) {
+      isLoading.value = false;
+      Get.snackbar("Error", e.toString(),
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.red,
+          colorText: Colors.white);
     }
   }
 }

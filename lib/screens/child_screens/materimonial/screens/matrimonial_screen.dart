@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:vvs_app/screens/message_screen/chat_screen.dart';
+import 'package:vvs_app/services/chat_service.dart';
 
 import 'package:vvs_app/theme/app_colors.dart';
 import 'profile_detail_screen.dart';
@@ -69,8 +70,6 @@ class _MatrimonialScreenState extends State<MatrimonialScreen> {
     if (_sortBy != 'recent') n++;
     return n;
   }
-
-
 
   int? _ageOf(dynamic dob) {
     DateTime? d;
@@ -500,7 +499,8 @@ class _MatrimonialScreenState extends State<MatrimonialScreen> {
       ),
     );
   }
- @override
+
+  @override
   Widget build(BuildContext context) {
     final usersQuery = FirebaseFirestore.instance
         .collection('users')
@@ -682,16 +682,14 @@ class _MatrimonialScreenState extends State<MatrimonialScreen> {
                       age: age,
                       photoUrl: photo,
                       joinedAt: joined,
-                      user:u,
+                      user: u,
                       onTap: () => Navigator.push(
                         context,
                         MaterialPageRoute(
                           builder: (_) => ProfileDetailScreen(userData: u),
                         ),
                       ),
-                      onConnect: (){
-
-                      },
+                      onConnect: () {},
                     );
                   },
                 );
@@ -701,8 +699,6 @@ class _MatrimonialScreenState extends State<MatrimonialScreen> {
         ],
       ),
     );
-
-    
   }
 
   Widget _pill(String text, IconData icon) {
@@ -723,7 +719,7 @@ class _MatrimonialScreenState extends State<MatrimonialScreen> {
       ),
     );
   }
-  
+
   String _cap(String? s) {
     if (s == null || s.isEmpty) return '';
     return s[0].toUpperCase() + s.substring(1);
@@ -731,10 +727,11 @@ class _MatrimonialScreenState extends State<MatrimonialScreen> {
 }
 
 class _ProfileTile extends StatelessWidget {
-    String _cap(String? s) {
+  String _cap(String? s) {
     if (s == null || s.isEmpty) return '';
     return s[0].toUpperCase() + s.substring(1);
   }
+
   const _ProfileTile({
     required this.name,
     required this.profession,
@@ -743,7 +740,7 @@ class _ProfileTile extends StatelessWidget {
     required this.photoUrl,
     required this.joinedAt,
     required this.onTap,
-    required this.onConnect, 
+    required this.onConnect,
     required this.user,
   });
 
@@ -757,10 +754,9 @@ class _ProfileTile extends StatelessWidget {
   final VoidCallback onConnect;
   final Map<String, dynamic> user;
 
-
   @override
   Widget build(BuildContext context) {
-        final phone = (user['mobile'] ?? user['phone'] ?? '').toString().trim();
+    final phone = (user['mobile'] ?? user['phone'] ?? '').toString().trim();
     final name = _cap(user['name']?.toString());
     final uid = (user['_id'] ?? '').toString();
 
@@ -833,7 +829,7 @@ class _ProfileTile extends StatelessWidget {
                       'Joined $joinedAt',
                       style: const TextStyle(color: Colors.grey, fontSize: 12),
                     ),
-                    SizedBox(height: 16,),
+                    SizedBox(height: 16),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
@@ -844,20 +840,38 @@ class _ProfileTile extends StatelessWidget {
                             await launchUrl(uri);
                           },
                           child: Container(
-                            padding: EdgeInsets.symmetric(horizontal: 16,vertical: 4),
-                            decoration: BoxDecoration(border: Border.all(width: 1,color: Colors.blue),borderRadius: BorderRadius.all(Radius.circular(16))),
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              border: Border.all(width: 1, color: Colors.blue),
+                              borderRadius: BorderRadius.all(
+                                Radius.circular(16),
+                              ),
+                            ),
                             child: Row(
                               children: [
-                                Icon(Icons.call_rounded,color: Colors.blue,),
-                                SizedBox(width: 8,),
-                                Text('Call',style: TextStyle(color: Colors.blue),),
+                                Icon(Icons.call_rounded, color: Colors.blue),
+                                SizedBox(width: 8),
+                                Text(
+                                  'Call',
+                                  style: TextStyle(color: Colors.blue),
+                                ),
                               ],
                             ),
                           ),
                         ),
-                         SizedBox(width:16,),
+                        SizedBox(width: 16),
                         GestureDetector(
-                          onTap: () {
+                          onTap: () async {
+                            await ChatService.ensureConversation(
+                              peerId: uid,
+                              peerName: name,
+                              peerPhoto: user['photoUrl']?.toString() ?? '',
+                              initialMessage: '',
+                            );
+
                             Navigator.push(
                               context,
                               MaterialPageRoute(
@@ -870,12 +884,30 @@ class _ProfileTile extends StatelessWidget {
                             );
                           },
                           child: Container(
-                             padding: EdgeInsets.symmetric(horizontal: 16,vertical: 4),
-                            decoration: BoxDecoration(borderRadius: BorderRadius.all(Radius.circular(16)),border: Border.all(width: 1,color: AppColors.accent.withOpacity(0.4),)),
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.all(
+                                Radius.circular(16),
+                              ),
+                              border: Border.all(
+                                width: 1,
+                                color: AppColors.accent.withOpacity(0.4),
+                              ),
+                            ),
                             child: Row(
                               children: [
-                                Icon(Icons.chat_bubble_rounded,color: Colors.green,), SizedBox(width: 8,),
-                                Text('Start Chat',style: TextStyle(color: Colors.green),),
+                                Icon(
+                                  Icons.chat_bubble_rounded,
+                                  color: Colors.green,
+                                ),
+                                SizedBox(width: 8),
+                                Text(
+                                  'Start Chat',
+                                  style: TextStyle(color: Colors.green),
+                                ),
                               ],
                             ),
                           ),
@@ -885,7 +917,6 @@ class _ProfileTile extends StatelessWidget {
                   ],
                 ),
               ),
-             
             ],
           ),
         ),

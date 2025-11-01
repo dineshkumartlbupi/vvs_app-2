@@ -20,12 +20,11 @@ class _SplashScreenState extends State<SplashScreen>
   void initState() {
     super.initState();
 
-    Future.delayed(const Duration(milliseconds: 300), () {
-      setState(() {
-        _opacity = 1.0;
-      });
+    Future.delayed(const Duration(milliseconds: 400), () {
+      setState(() => _opacity = 1.0);
     });
 
+    // 🔹 Auto check login status
     Future.delayed(const Duration(seconds: 2), _checkAuthState);
   }
 
@@ -58,7 +57,7 @@ class _SplashScreenState extends State<SplashScreen>
             children: [
               Image.asset('assets/logo.png', width: 168, height: 168),
               const SizedBox(height: 32),
-              const AppTitle('WELCOME TO VVS'),
+              const AppTitle('WELCOME TO Varshney One'),
               const SizedBox(height: 14),
               const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 32),

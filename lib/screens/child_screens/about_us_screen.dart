@@ -15,10 +15,10 @@ class AboutUsScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: const [
-            AppTitle('Varshney Vaishy Samaj (VVS)'),
+            AppTitle('Varshney Vaishy Samaj'),
             SizedBox(height: 16),
             Text(
-              'The Varshney Vaishy Samaj (VVS) is a community-led platform that brings together '
+              'The Varshney Vaishy Samaj  is a community-led platform that brings together '
               'members of the Varshney (Bania) community from across regions, promoting values '
               'of unity, tradition, service, and progress.',
               style: TextStyle(fontSize: 14, height: 1.6),

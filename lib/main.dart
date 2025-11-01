@@ -17,7 +17,7 @@ class VVSApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return GetMaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'VVS App',
+      title: 'Varshney One',
       theme: AppTheme.light,
       home: const SplashScreen(),
     );

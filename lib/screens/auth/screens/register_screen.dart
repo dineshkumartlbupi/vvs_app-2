@@ -237,7 +237,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 child: Column(
                   children: [
                     const SizedBox(height: 4),
-                    const AppTitle('Join the VVS Network', size: 20),
+                    const AppTitle('Join the Varshney One Network', size: 20),
                     const SizedBox(height: 6),
                     const AppSubTitle(
                       'Connect with your Varshney Samaj. Strengthen Our Roots.',

@@ -2,6 +2,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:vvs_app/screens/child_screens/blood_donor/screen/blood_donor_form.dart';
 import 'package:vvs_app/screens/child_screens/family_regiestration/screens/family_registration_screen.dart';
+import 'package:vvs_app/screens/events_screen/events_screen.dart';
+import 'package:vvs_app/screens/marketplace/marketplace_all_screen.dart.dart';
+import 'package:vvs_app/services/home_service.dart';
 
 import 'package:vvs_app/widgets/AutoSlidingNewsBanner.dart';
 import 'package:vvs_app/widgets/bottom_footer.dart';
@@ -20,11 +23,24 @@ class _HomeScreenState extends State<HomeScreen> {
   List<Map<String, String>> _slidesNews = [];
   bool _isLoadingNews = true;
   String? _newsError;
-
+  final HomeService _homeService = HomeService();
+  bool _isLoadingStats = true;
+  Map<String, int> _stats = {};
   @override
   void initState() {
     super.initState();
     _fetchNews();
+    _fetchStats();
+  }
+
+  Future<void> _fetchStats() async {
+    setState(() => _isLoadingStats = true);
+    final stats = await _homeService.fetchQuickStats();
+    if (!mounted) return;
+    setState(() {
+      _stats = stats;
+      _isLoadingStats = false;
+    });
   }
 
   Future<void> _fetchNews() async {
@@ -110,7 +126,11 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             children: [
               // Header
-              Row(children: [Expanded(child: AppTitle("Welcome to VVS"))]),
+              Row(
+                children: [
+                  Expanded(child: AppTitle("Welcome to Varshney One")),
+                ],
+              ),
               const SizedBox(height: 12),
 
               // News Banner with graceful states
@@ -155,10 +175,8 @@ class _HomeScreenState extends State<HomeScreen> {
               _QuickActionsGrid(
                 onFamilyTap: _navigateToAddMember,
                 onDonorTap: _navigateToBloodDonorForm,
-                onMatrimonialTap: () {},
-                onMarketTap: () {},
-                onOffersTap: () {},
-                onEventsTap: () {},
+                onMarketTap: _navigateToMarketplace,
+                onEventsTap: _navigateToEvents,
               ),
 
               const SizedBox(height: 24),
@@ -219,7 +237,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 title: '',
                 children: const [
                   _BulletLine('Dr. Asha Varshney awarded Padma Shri'),
-                  _BulletLine('Launch of VVS Matrimonial App'),
+                  _BulletLine('Launch of Varshney One Matrimonial App'),
                   _BulletLine('New Health Insurance Tie-up Announced'),
                 ],
               ),
@@ -250,31 +268,32 @@ class _HomeScreenState extends State<HomeScreen> {
               // Stats
               _SectionHeader(title: 'Quick Stats'),
               const SizedBox(height: 8),
-              _StatsStrip(
-                items: const [
-                  _StatItemData(
-                    icon: Icons.groups_2_rounded,
-                    label: 'Members',
-                    value: '1,234',
-                  ),
-                  _StatItemData(
-                    icon: Icons.family_restroom_rounded,
-                    label: 'Families',
-                    value: '321',
-                  ),
-                  _StatItemData(
-                    icon: Icons.volunteer_activism_rounded,
-                    label: 'Donors',
-                    value: '89',
-                  ),
-                  _StatItemData(
-                    icon: Icons.event_available_rounded,
-                    label: 'Events',
-                    value: '4',
-                  ),
-                ],
-              ),
-
+              _isLoadingStats
+                  ? const Center(child: CircularProgressIndicator())
+                  : _StatsStrip(
+                      items: [
+                        _StatItemData(
+                          icon: Icons.groups_2_rounded,
+                          label: 'Members',
+                          value: _stats['members'].toString(),
+                        ),
+                        _StatItemData(
+                          icon: Icons.family_restroom_rounded,
+                          label: 'Families',
+                          value: _stats['families'].toString(),
+                        ),
+                        _StatItemData(
+                          icon: Icons.volunteer_activism_rounded,
+                          label: 'Donors',
+                          value: _stats['donors'].toString(),
+                        ),
+                        _StatItemData(
+                          icon: Icons.event_available_rounded,
+                          label: 'Events',
+                          value: _stats['events'].toString(),
+                        ),
+                      ],
+                    ),
               const SizedBox(height: 24),
               const BottomFooter(),
             ],
@@ -295,6 +314,20 @@ class _HomeScreenState extends State<HomeScreen> {
     Navigator.push(
       context,
       MaterialPageRoute(builder: (_) => const BloodDonorFormScreen()),
+    );
+  }
+
+  void _navigateToMarketplace() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const MarketplaceAllScreen()),
+    );
+  }
+
+  void _navigateToEvents() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const EventsScreen()),
     );
   }
 
@@ -444,17 +477,13 @@ class _HighlightCTA extends StatelessWidget {
 class _QuickActionsGrid extends StatelessWidget {
   final VoidCallback onFamilyTap;
   final VoidCallback onDonorTap;
-  final VoidCallback onMatrimonialTap;
   final VoidCallback onMarketTap;
-  final VoidCallback onOffersTap;
   final VoidCallback onEventsTap;
 
   const _QuickActionsGrid({
     required this.onFamilyTap,
     required this.onDonorTap,
-    required this.onMatrimonialTap,
     required this.onMarketTap,
-    required this.onOffersTap,
     required this.onEventsTap,
   });
 
@@ -486,21 +515,13 @@ class _QuickActionsGrid extends StatelessWidget {
             label: 'Blood Donor',
             onTap: onDonorTap,
           ),
-          _QuickAction(
-            icon: Icons.favorite_rounded,
-            label: 'Matrimonial',
-            onTap: onMatrimonialTap,
-          ),
+
           _QuickAction(
             icon: Icons.storefront_rounded,
             label: 'Marketplace',
             onTap: onMarketTap,
           ),
-          _QuickAction(
-            icon: Icons.local_offer_rounded,
-            label: 'Offers',
-            onTap: onOffersTap,
-          ),
+
           _QuickAction(
             icon: Icons.event_available_rounded,
             label: 'Events',

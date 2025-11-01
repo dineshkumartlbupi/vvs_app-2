@@ -18,7 +18,7 @@ class EducationScreen extends StatelessWidget {
             AppTitle('Empowering Through Education'),
             SizedBox(height: 16),
             Text(
-              'Education is the foundation of a progressive society. The Varshney Vaishy Samaj (VVS) is committed '
+              'Education is the foundation of a progressive society. The Varshney Vaishy Samaj is committed '
               'to nurturing young minds and supporting lifelong learners across our community.',
               style: TextStyle(fontSize: 14, height: 1.6),
             ),

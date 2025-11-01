@@ -134,7 +134,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ),
                               ),
                               const SizedBox(height: 14),
-                              const AppTitle('Welcome to VVS'),
+                              const AppTitle('Welcome to Varshney One'),
                               const SizedBox(height: 6),
                               const AppSubTitle('संस्कार • एकता • जनसेवा'),
                             ],

@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:vvs_app/screens/child_screens/about_developer_screen.dart';
-import 'package:vvs_app/screens/child_screens/blog_screen.dart';
+import 'package:vvs_app/screens/blogs_screen/blog_screen.dart';
 import 'package:vvs_app/screens/child_screens/book_author/screens/books_list_screen.dart.dart';
 import 'package:vvs_app/screens/child_screens/family_regiestration/screens/family_registration_screen.dart';
 import 'package:vvs_app/screens/child_screens/founder_screen.dart';
 import 'package:vvs_app/screens/child_screens/marketplace/screens/marketplace_screen.dart';
-import 'package:vvs_app/screens/child_screens/testimonial_screen.dart';
 import 'package:vvs_app/screens/child_screens/vvs_id_card_screen.dart';
 import 'package:vvs_app/screens/home_screen.dart';
 import 'package:vvs_app/screens/child_screens/profile/screens/profile_screen.dart.dart';
@@ -13,10 +12,7 @@ import 'package:vvs_app/screens/child_screens/news/screens/news_bulletin_screen.
 import 'package:vvs_app/screens/child_screens/materimonial/screens/matrimonial_screen.dart';
 import 'package:vvs_app/screens/child_screens/marketplace/directory_screens/directory_screen.dart';
 import 'package:vvs_app/screens/child_screens/blood_donor/screen/blood_group_screen.dart';
-import 'package:vvs_app/screens/message_screen/chat_screen.dart';
-import 'package:vvs_app/screens/child_screens/events_screen.dart';
-import 'package:vvs_app/screens/child_screens/offers_screen.dart';
-import 'package:vvs_app/screens/child_screens/payment_screen.dart';
+import 'package:vvs_app/screens/events_screen/events_screen.dart';
 import 'package:vvs_app/screens/child_screens/contact_us_screen.dart';
 import 'package:vvs_app/screens/child_screens/about_us_screen.dart';
 import 'package:vvs_app/screens/child_screens/terms_screen.dart';
@@ -60,12 +56,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
     'Market Place': const MarketplaceAllScreen(),
     'Blood Group & Donors': const BloodDonorsScreen(),
     'Message(Chat)': const MessagesScreen(),
-    'VVS ID Card': const VvsIdCardScreen(),
-    'Testimonial': const TestimonialsScreen(),
+    'Varshney One ID Card': const VvsIdCardScreen(),
     'Blog': const BlogScreen(),
     'Upcoming Events': const EventsScreen(),
-    'Offers & Discounts': const OffersScreen(),
-    'Payment Gateway': const PaymentScreen(),
     'Contact Us': const ContactUsScreen(),
     'Terms & Conditions': const TermsScreen(),
   };
@@ -83,7 +76,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: CustomAppBar(
-        title: _selectedIndex == 0 ? "VVS" : _bottomTitles[_selectedIndex],
+        title: _selectedIndex == 0
+            ? "Varshney One"
+            : _bottomTitles[_selectedIndex],
       ),
       drawer: CustomDrawer(screenMap: drawerScreenMap, onTap: _onDrawerTap),
       body: _bottomScreens[_selectedIndex],

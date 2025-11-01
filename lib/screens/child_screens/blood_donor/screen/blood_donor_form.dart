@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:vvs_app/screens/child_screens/blood_donor/controller/blood_donor_controller.dart';
+import 'package:vvs_app/widgets/ui_components.dart';
 
 class BloodDonorFormScreen extends StatefulWidget {
   const BloodDonorFormScreen({super.key});
@@ -143,20 +144,16 @@ class _BloodDonorFormScreenState extends State<BloodDonorFormScreen> {
               autovalidateMode: AutovalidateMode.onUserInteraction, // to highlight as user types
               child: ListView(
                 children: [
-                  TextFormField(
+                  AppInput(
                     controller: _nameController,
-                    decoration: const InputDecoration(
-                      labelText: 'Full Name',
-                    ),
+                 label: 'Full Name',
                     validator: (value) =>
                         (value == null || value.trim().isEmpty) ? 'Enter your name' : null,
                   ),
                   const SizedBox(height: 16),
-                  TextFormField(
+                  AppInput(
                     controller: _ageController,
-                    decoration: const InputDecoration(
-                      labelText: 'Age',
-                    ),
+                  label: 'Age',
                     keyboardType: TextInputType.number,
                     validator: (value) {
                       if (value == null || value.trim().isEmpty) return 'Enter age';
@@ -169,11 +166,9 @@ class _BloodDonorFormScreenState extends State<BloodDonorFormScreen> {
                     },
                   ),
                   const SizedBox(height: 16),
-                  TextFormField(
+                 AppInput(
                     controller: _weightController,
-                    decoration: const InputDecoration(
-                      labelText: 'Weight (kg)',
-                    ),
+                   label:  'Weight (kg)',
                     keyboardType: TextInputType.number,
                     validator: (value) {
                       if (value == null || value.trim().isEmpty) return 'Enter weight';
@@ -186,11 +181,9 @@ class _BloodDonorFormScreenState extends State<BloodDonorFormScreen> {
                     },
                   ),
                   const SizedBox(height: 16),
-                  TextFormField(
+                  AppInput(
                     controller: _phoneController,
-                    decoration: const InputDecoration(
-                      labelText: 'Phone Number',
-                    ),
+                    label: 'Phone Number',
                     keyboardType: TextInputType.phone,
                     validator: (value) {
                       if (value == null || value.trim().isEmpty) return 'Enter phone number';
@@ -199,11 +192,9 @@ class _BloodDonorFormScreenState extends State<BloodDonorFormScreen> {
                     },
                   ),
                   const SizedBox(height: 16),
-                  TextFormField(
+                  AppInput(
                     controller: _emailController,
-                    decoration: const InputDecoration(
-                      labelText: 'Email Address',
-                    ),
+                    label: 'Email Address',
                     keyboardType: TextInputType.emailAddress,
                     validator: (value) {
                       if (value == null || value.trim().isEmpty) return 'Enter email';
@@ -212,21 +203,17 @@ class _BloodDonorFormScreenState extends State<BloodDonorFormScreen> {
                     },
                   ),
                   const SizedBox(height: 16),
-                  TextFormField(
+                 AppInput(
                     controller: _locationController,
-                    decoration: const InputDecoration(
-                      labelText: 'City / Location',
-                    ),
+                    label: 'Location',
                     validator: (value) =>
                         (value == null || value.trim().isEmpty) ? 'Enter your location' : null,
                   ),
                   const SizedBox(height: 16),
-                  TextFormField(
+                 AppInput(
                     controller: _bloodGroupController,
-                    decoration: const InputDecoration(
-                      labelText: 'Blood Group (read‑only)',
-                    ),
-                    enabled: false,
+                    label: 'Blood Group',
+                    // enabled: false,
                   ),
                   const SizedBox(height: 32),
                   ElevatedButton(
