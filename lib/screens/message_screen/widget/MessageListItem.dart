@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:vvs_app/screens/message_screen/chat_screen.dart';
 import 'package:vvs_app/theme/app_colors.dart';
 

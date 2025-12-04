@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:vvs_app/screens/message_screen/chat_screen.dart';
@@ -17,22 +18,22 @@ class MatrimonialScreen extends StatefulWidget {
   State<MatrimonialScreen> createState() => _MatrimonialScreenState();
 }
 
-class _MatrimonialScreenState extends State<MatrimonialScreen> {
+class _MatrimonialScreenState extends State<MatrimonialScreen>
+    with SingleTickerProviderStateMixin {
   final _searchCtrl = TextEditingController();
 
   String _search = '';
-  String _gender = ''; // '', 'Male', 'Female', 'Other'
+  String _gender = '';
   String _location = '';
   RangeValues _ageRange = const RangeValues(18, 60);
-  String _sortBy = 'recent'; // 'recent', 'ageAsc', 'ageDesc'
+  String _sortBy = 'recent';
 
   final _searchFocus = FocusNode();
-
-  // how many filters are applied — update this from your filter sheet
   int _activeFiltersCount = 0;
 
-  // (Optional) debounce typing so you don’t refilter on every keystroke
   Timer? _debounce;
+  late AnimationController _animationController;
+
   void _onSearchChanged(String v) {
     _debounce?.cancel();
     _debounce = Timer(const Duration(milliseconds: 250), () {
@@ -41,23 +42,26 @@ class _MatrimonialScreenState extends State<MatrimonialScreen> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 800),
+      vsync: this,
+    );
+    _animationController.forward();
+  }
+
+  @override
   void dispose() {
     _debounce?.cancel();
     _searchFocus.dispose();
+    _searchCtrl.dispose();
+    _animationController.dispose();
     super.dispose();
   }
 
-  // Defaults + options
   static const RangeValues _kDefaultAge = RangeValues(18, 60);
   final List<String> _genderOptions = const ['Male', 'Female', 'Other'];
-
-  // Optional: show quick location suggestions under the field
-  final List<String> _recentLocations = <String>[
-    // Fill from user’s last selections or popular cities
-    // 'Agra', 'Aligarh', 'Delhi'
-  ];
-
-  // Badge count for the top search bar
 
   int _computeActiveFiltersCount() {
     int n = 0;
@@ -101,7 +105,6 @@ class _MatrimonialScreenState extends State<MatrimonialScreen> {
   }
 
   bool _isMatrimonialEligible(Map<String, dynamic> u) {
-    // Respect explicit flag if present, otherwise default to singles
     final boolFlag = (u['isMatrimonial'] ?? u['matrimonialEnabled']) == true;
     final status = (u['maritalStatus'] ?? '').toString().toLowerCase();
     return boolFlag || status == 'single';
@@ -146,7 +149,7 @@ class _MatrimonialScreenState extends State<MatrimonialScreen> {
 
       out.add({
         ...data,
-        '_id': d.id, // keep id for chat routing if needed
+        '_id': d.id,
       });
     }
 
@@ -174,6 +177,7 @@ class _MatrimonialScreenState extends State<MatrimonialScreen> {
   }
 
   void _openFilters() {
+    HapticFeedback.mediumImpact();
     var tmpGender = _gender;
     var tmpLoc = _location;
     var tmpAge = RangeValues(_ageRange.start, _ageRange.end);
@@ -182,316 +186,311 @@ class _MatrimonialScreenState extends State<MatrimonialScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: AppColors.card,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-      ),
+      backgroundColor: Colors.transparent,
       builder: (_) => StatefulBuilder(
         builder: (ctx, setModal) {
-          return SafeArea(
-            top: false,
-            child: Padding(
-              padding: EdgeInsets.only(
-                left: 16,
-                right: 16,
-                top: 12,
-                bottom: MediaQuery.of(ctx).viewInsets.bottom + 12,
+          return Container(
+            decoration: BoxDecoration(
+              color: AppColors.card,
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(24),
               ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Grab handle
-                  Container(
-                    width: 40,
-                    height: 4,
-                    margin: const EdgeInsets.only(bottom: 10),
-                    decoration: BoxDecoration(
-                      color: Colors.white24,
-                      borderRadius: BorderRadius.circular(4),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.2),
+                  blurRadius: 20,
+                  offset: const Offset(0, -5),
+                ),
+              ],
+            ),
+            child: SafeArea(
+              top: false,
+              child: Padding(
+                padding: EdgeInsets.only(
+                  left: 20,
+                  right: 20,
+                  top: 16,
+                  bottom: MediaQuery.of(ctx).viewInsets.bottom + 16,
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Grab handle
+                    Container(
+                      width: 40,
+                      height: 4,
+                      margin: const EdgeInsets.only(bottom: 16),
+                      decoration: BoxDecoration(
+                        color: AppColors.border.withOpacity(0.5),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
                     ),
-                  ),
 
-                  // Header row
-                  Row(
-                    children: [
-                      const Text(
-                        'Filters',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w800,
+                    // Header
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: AppColors.primary.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: const Icon(
+                            Icons.tune_rounded,
+                            color: AppColors.primary,
+                            size: 20,
+                          ),
                         ),
-                      ),
-                      const Spacer(),
-                      TextButton.icon(
-                        onPressed: () {
-                          setModal(() {
-                            tmpGender = '';
-                            tmpLoc = '';
-                            tmpAge = _kDefaultAge;
-                            tmpSort = 'recent';
-                          });
-                        },
-                        icon: const Icon(Icons.refresh_rounded, size: 18),
-                        label: const Text('Clear all'),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 6),
+                        const SizedBox(width: 12),
+                        const Text(
+                          'Filters',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w800,
+                            color: AppColors.text,
+                          ),
+                        ),
+                        const Spacer(),
+                        TextButton.icon(
+                          onPressed: () {
+                            HapticFeedback.selectionClick();
+                            setModal(() {
+                              tmpGender = '';
+                              tmpLoc = '';
+                              tmpAge = _kDefaultAge;
+                              tmpSort = 'recent';
+                            });
+                          },
+                          icon: const Icon(Icons.refresh_rounded, size: 18),
+                          label: const Text('Clear'),
+                          style: TextButton.styleFrom(
+                            foregroundColor: AppColors.primary,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 20),
 
-                  // Body
-                  Flexible(
-                    child: SingleChildScrollView(
-                      padding: const EdgeInsets.only(bottom: 8),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // Gender
-                          const _SectionTitle(
-                            icon: Icons.wc_rounded,
-                            title: 'Gender',
-                          ),
-                          const SizedBox(height: 8),
-                          Wrap(
-                            spacing: 8,
-                            runSpacing: 8,
-                            children: _genderOptions.map((g) {
-                              final selected = tmpGender == g;
-                              return ChoiceChip(
-                                label: Text(g),
-                                selected: selected,
-                                onSelected: (_) => setModal(
-                                  () => tmpGender = selected ? '' : g,
-                                ),
-                                selectedColor: AppColors.primary.withOpacity(
-                                  0.12,
-                                ),
-                                labelStyle: TextStyle(
-                                  color: selected
-                                      ? AppColors.primary
-                                      : Colors.black,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                                backgroundColor: Colors.white12,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(24),
-                                ),
-                              );
-                            }).toList(),
-                          ),
-                          const SizedBox(height: 16),
+                    // Body
+                    Flexible(
+                      child: SingleChildScrollView(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Gender
+                            const _EnhancedSectionTitle(
+                              icon: Icons.wc_rounded,
+                              title: 'Gender',
+                            ),
+                            const SizedBox(height: 12),
+                            Wrap(
+                              spacing: 10,
+                              runSpacing: 10,
+                              children: _genderOptions.map((g) {
+                                final selected = tmpGender == g;
+                                return _EnhancedChoiceChip(
+                                  label: g,
+                                  selected: selected,
+                                  onSelected: () {
+                                    HapticFeedback.selectionClick();
+                                    setModal(() => tmpGender = selected ? '' : g);
+                                  },
+                                );
+                              }).toList(),
+                            ),
+                            const SizedBox(height: 20),
 
-                          // Location
-                          const _SectionTitle(
-                            icon: Icons.location_on_outlined,
-                            title: 'Location',
-                          ),
-                          const SizedBox(height: 8),
-                          Material(
-                            color: Colors.white,
-                            elevation: 1.5,
-                            shadowColor: Colors.black12,
-                            borderRadius: BorderRadius.circular(12),
-                            child: TextFormField(
-                              initialValue: tmpLoc,
-                              onChanged: (v) => setModal(() => tmpLoc = v),
-                              decoration: InputDecoration(
-                                hintText: 'City / Area',
-                                prefixIcon: const Icon(Icons.search_rounded),
-                                suffixIcon: (tmpLoc.isNotEmpty)
-                                    ? IconButton(
-                                        tooltip: 'Clear',
-                                        icon: const Icon(Icons.close_rounded),
-                                        onPressed: () =>
-                                            setModal(() => tmpLoc = ''),
-                                      )
-                                    : null,
-                                border: InputBorder.none,
-                                contentPadding: const EdgeInsets.symmetric(
-                                  horizontal: 14,
-                                  vertical: 14,
+                            // Location
+                            const _EnhancedSectionTitle(
+                              icon: Icons.location_on_rounded,
+                              title: 'Location',
+                            ),
+                            const SizedBox(height: 12),
+                            Container(
+                              decoration: BoxDecoration(
+                                color: AppColors.background,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: AppColors.border.withOpacity(0.3),
+                                ),
+                              ),
+                              child: TextFormField(
+                                initialValue: tmpLoc,
+                                onChanged: (v) => setModal(() => tmpLoc = v),
+                                decoration: InputDecoration(
+                                  hintText: 'Enter city or area',
+                                  prefixIcon: const Icon(
+                                    Icons.search_rounded,
+                                    color: AppColors.subtitle,
+                                  ),
+                                  suffixIcon: tmpLoc.isNotEmpty
+                                      ? IconButton(
+                                          icon: const Icon(Icons.close_rounded),
+                                          onPressed: () {
+                                            HapticFeedback.selectionClick();
+                                            setModal(() => tmpLoc = '');
+                                          },
+                                        )
+                                      : null,
+                                  border: InputBorder.none,
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 14,
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                          if (_recentLocations.isNotEmpty) ...[
-                            const SizedBox(height: 10),
+                            const SizedBox(height: 20),
+
+                            // Age range
+                            const _EnhancedSectionTitle(
+                              icon: Icons.cake_rounded,
+                              title: 'Age Range',
+                            ),
+                            const SizedBox(height: 12),
+                            Row(
+                              children: [
+                                _AgeBubble(value: tmpAge.start.round()),
+                                const SizedBox(width: 12),
+                                const Icon(
+                                  Icons.arrow_forward_rounded,
+                                  color: AppColors.subtitle,
+                                  size: 16,
+                                ),
+                                const SizedBox(width: 12),
+                                _AgeBubble(value: tmpAge.end.round()),
+                                const Spacer(),
+                                TextButton(
+                                  onPressed: () {
+                                    HapticFeedback.selectionClick();
+                                    setModal(() => tmpAge = _kDefaultAge);
+                                  },
+                                  child: const Text('Reset'),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            SliderTheme(
+                              data: SliderTheme.of(context).copyWith(
+                                rangeThumbShape: const RoundRangeSliderThumbShape(
+                                  enabledThumbRadius: 12,
+                                ),
+                                overlayShape: const RoundSliderOverlayShape(
+                                  overlayRadius: 20,
+                                ),
+                              ),
+                              child: RangeSlider(
+                                min: _kDefaultAge.start,
+                                max: _kDefaultAge.end,
+                                divisions: (_kDefaultAge.end - _kDefaultAge.start).toInt(),
+                                values: tmpAge,
+                                activeColor: AppColors.primary,
+                                inactiveColor: AppColors.primary.withOpacity(0.2),
+                                onChanged: (v) => setModal(() => tmpAge = v),
+                              ),
+                            ),
+                            const SizedBox(height: 20),
+
+                            // Sort
+                            const _EnhancedSectionTitle(
+                              icon: Icons.sort_rounded,
+                              title: 'Sort By',
+                            ),
+                            const SizedBox(height: 12),
                             Wrap(
-                              spacing: 8,
-                              runSpacing: 8,
-                              children: _recentLocations.map((loc) {
-                                return ActionChip(
-                                  label: Text(loc),
-                                  onPressed: () => setModal(() => tmpLoc = loc),
-                                  backgroundColor: Colors.white10,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(20),
-                                  ),
+                              spacing: 10,
+                              runSpacing: 10,
+                              children: const [
+                                ('recent', Icons.schedule_rounded, 'Most Recent'),
+                                ('ageAsc', Icons.arrow_upward_rounded, 'Age: Low → High'),
+                                ('ageDesc', Icons.arrow_downward_rounded, 'Age: High → Low'),
+                              ].map((t) {
+                                final value = t.$1;
+                                final icon = t.$2;
+                                final label = t.$3;
+                                final selected = tmpSort == value;
+                                return _EnhancedChoiceChip(
+                                  label: label,
+                                  icon: icon,
+                                  selected: selected,
+                                  onSelected: () {
+                                    HapticFeedback.selectionClick();
+                                    setModal(() => tmpSort = value);
+                                  },
                                 );
                               }).toList(),
                             ),
                           ],
-                          const SizedBox(height: 16),
-
-                          // Age range
-                          const _SectionTitle(
-                            icon: Icons.cake_outlined,
-                            title: 'Age range',
-                          ),
-                          const SizedBox(height: 8),
-                          Row(
-                            children: [
-                              _AgeBubble(value: tmpAge.start.round()),
-                              const SizedBox(width: 8),
-                              const Text(
-                                'to',
-                                style: TextStyle(color: Colors.white70),
-                              ),
-                              const SizedBox(width: 8),
-                              _AgeBubble(value: tmpAge.end.round()),
-                              const Spacer(),
-                              TextButton(
-                                onPressed: () =>
-                                    setModal(() => tmpAge = _kDefaultAge),
-                                child: const Text('Reset'),
-                              ),
-                            ],
-                          ),
-                          SliderTheme(
-                            data: SliderTheme.of(context).copyWith(
-                              rangeThumbShape: const RoundRangeSliderThumbShape(
-                                enabledThumbRadius: 10,
-                              ),
-                            ),
-                            child: RangeSlider(
-                              min: _kDefaultAge.start,
-                              max: _kDefaultAge.end,
-                              divisions: (_kDefaultAge.end - _kDefaultAge.start)
-                                  .toInt(),
-                              values: tmpAge,
-                              activeColor: AppColors.primary,
-                              onChanged: (v) => setModal(() => tmpAge = v),
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-
-                          // Sort
-                          const _SectionTitle(
-                            icon: Icons.sort_rounded,
-                            title: 'Sort by',
-                          ),
-                          const SizedBox(height: 8),
-                          Wrap(
-                            spacing: 8,
-                            runSpacing: 8,
-                            children:
-                                const [
-                                  (
-                                    'recent',
-                                    Icons.schedule_rounded,
-                                    'Most recent',
-                                  ),
-                                  (
-                                    'ageAsc',
-                                    Icons.arrow_upward_rounded,
-                                    'Age: Low → High',
-                                  ),
-                                  (
-                                    'ageDesc',
-                                    Icons.arrow_downward_rounded,
-                                    'Age: High → Low',
-                                  ),
-                                ].map((t) {
-                                  final value = t.$1;
-                                  final icon = t.$2;
-                                  final label = t.$3;
-                                  final selected = tmpSort == value;
-                                  return ChoiceChip(
-                                    avatar: Icon(
-                                      icon,
-                                      size: 16,
-                                      color: selected
-                                          ? AppColors.primary
-                                          : Colors.white70,
-                                    ),
-                                    label: Text(label),
-                                    selected: selected,
-                                    onSelected: (_) => setModal(
-                                      () =>
-                                          tmpSort = selected ? 'recent' : value,
-                                    ),
-                                    selectedColor: AppColors.primary
-                                        .withOpacity(0.12),
-                                    labelStyle: TextStyle(
-                                      color: selected
-                                          ? AppColors.primary
-                                          : Colors.black,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                    backgroundColor: Colors.white12,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(24),
-                                    ),
-                                  );
-                                }).toList(),
-                          ),
-                        ],
+                        ),
                       ),
                     ),
-                  ),
 
-                  const SizedBox(height: 10),
+                    const SizedBox(height: 20),
 
-                  // Bottom actions
-                  Row(
-                    children: [
-                      Expanded(
-                        child: OutlinedButton(
-                          onPressed: () => setModal(() {
-                            tmpGender = '';
-                            tmpLoc = '';
-                            tmpAge = _kDefaultAge;
-                            tmpSort = 'recent';
-                          }),
-                          style: OutlinedButton.styleFrom(
-                            minimumSize: const Size.fromHeight(48),
-                            side: const BorderSide(color: Colors.white24),
-                            foregroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
+                    // Actions
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: () {
+                              HapticFeedback.selectionClick();
+                              setModal(() {
+                                tmpGender = '';
+                                tmpLoc = '';
+                                tmpAge = _kDefaultAge;
+                                tmpSort = 'recent';
+                              });
+                            },
+                            style: OutlinedButton.styleFrom(
+                              minimumSize: const Size.fromHeight(50),
+                              side: BorderSide(
+                                color: AppColors.border.withOpacity(0.5),
+                              ),
+                              foregroundColor: AppColors.text,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            child: const Text(
+                              'Reset',
+                              style: TextStyle(fontWeight: FontWeight.w700),
                             ),
                           ),
-                          child: const Text('Reset'),
                         ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: ElevatedButton(
-                          onPressed: () {
-                            setState(() {
-                              _gender = tmpGender;
-                              _location = tmpLoc;
-                              _ageRange = tmpAge;
-                              _sortBy = tmpSort;
-                              _activeFiltersCount =
-                                  _computeActiveFiltersCount();
-                            });
-                            Navigator.pop(context);
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.primary,
-                            foregroundColor: Colors.white,
-                            minimumSize: const Size.fromHeight(48),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: () {
+                              HapticFeedback.heavyImpact();
+                              setState(() {
+                                _gender = tmpGender;
+                                _location = tmpLoc;
+                                _ageRange = tmpAge;
+                                _sortBy = tmpSort;
+                                _activeFiltersCount = _computeActiveFiltersCount();
+                              });
+                              Navigator.pop(context);
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.primary,
+                              foregroundColor: Colors.white,
+                              minimumSize: const Size.fromHeight(50),
+                              elevation: 2,
+                              shadowColor: AppColors.primary.withOpacity(0.3),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            child: const Text(
+                              'Apply Filters',
+                              style: TextStyle(fontWeight: FontWeight.w700),
                             ),
                           ),
-                          child: const Text('Apply filters'),
                         ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                ],
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
           );
@@ -508,17 +507,48 @@ class _MatrimonialScreenState extends State<MatrimonialScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.background,
-
       body: Column(
         children: [
-          // Search + filters
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-            child: Material(
-              color: Colors.white,
-              elevation: _searchFocus.hasFocus ? 6 : 2,
-              shadowColor: Colors.black.withOpacity(0.15),
-              borderRadius: BorderRadius.circular(14),
+          // Enhanced Search Bar
+          Container(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  AppColors.card,
+                  AppColors.card.withOpacity(0.95),
+                ],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.primary.withOpacity(0.06),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Container(
+              decoration: BoxDecoration(
+                color: AppColors.background,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: _searchFocus.hasFocus
+                      ? AppColors.primary.withOpacity(0.3)
+                      : AppColors.border.withOpacity(0.3),
+                  width: 1.5,
+                ),
+                boxShadow: _searchFocus.hasFocus
+                    ? [
+                        BoxShadow(
+                          color: AppColors.primary.withOpacity(0.1),
+                          blurRadius: 12,
+                          offset: const Offset(0, 4),
+                        ),
+                      ]
+                    : null,
+              ),
               child: Row(
                 children: [
                   // Search field
@@ -527,26 +557,33 @@ class _MatrimonialScreenState extends State<MatrimonialScreen> {
                       controller: _searchCtrl,
                       focusNode: _searchFocus,
                       textInputAction: TextInputAction.search,
-                      onChanged: _onSearchChanged, // <-- debounced
+                      onChanged: _onSearchChanged,
                       onSubmitted: (v) => setState(() => _search = v.trim()),
                       decoration: InputDecoration(
-                        hintText: 'Search by name, education, profession…',
-                        hintStyle: const TextStyle(color: Colors.black54),
-                        prefixIcon: const Icon(Icons.search_rounded),
-                        suffixIcon: (_searchCtrl.text.isNotEmpty)
+                        hintText: 'Search profiles...',
+                        hintStyle: TextStyle(
+                          color: AppColors.subtitle.withOpacity(0.7),
+                        ),
+                        prefixIcon: Icon(
+                          Icons.search_rounded,
+                          color: _searchFocus.hasFocus
+                              ? AppColors.primary
+                              : AppColors.subtitle,
+                        ),
+                        suffixIcon: _searchCtrl.text.isNotEmpty
                             ? IconButton(
-                                tooltip: 'Clear',
                                 icon: const Icon(Icons.close_rounded),
                                 onPressed: () {
+                                  HapticFeedback.selectionClick();
                                   _searchCtrl.clear();
                                   _onSearchChanged('');
                                 },
+                                color: AppColors.subtitle,
                               )
                             : null,
                         border: InputBorder.none,
-                        isDense: true,
                         contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 12,
+                          horizontal: 16,
                           vertical: 14,
                         ),
                       ),
@@ -554,144 +591,131 @@ class _MatrimonialScreenState extends State<MatrimonialScreen> {
                   ),
 
                   // Divider
-                  SizedBox(
-                    height: 40,
-                    child: VerticalDivider(
-                      width: 1,
-                      color: Colors.black12,
-                      thickness: 1,
-                    ),
+                  Container(
+                    height: 32,
+                    width: 1,
+                    color: AppColors.border.withOpacity(0.3),
                   ),
 
-                  // Filters button with badge
-                  Padding(
-                    padding: const EdgeInsets.only(right: 6),
-                    child: Stack(
-                      clipBehavior: Clip.none,
-                      children: [
-                        TextButton.icon(
-                          onPressed: _openFilters,
-                          icon: const Icon(Icons.tune_rounded),
-                          label: const Text('Filters'),
-                          style: TextButton.styleFrom(
-                            foregroundColor: AppColors.primary,
-                            padding: const EdgeInsets.symmetric(horizontal: 10),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
+                  // Filter button with badge
+                  Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      IconButton(
+                        onPressed: _openFilters,
+                        icon: const Icon(Icons.tune_rounded),
+                        color: AppColors.primary,
+                        tooltip: 'Filters',
+                      ),
+                      if (_activeFiltersCount > 0)
+                        Positioned(
+                          right: 6,
+                          top: 6,
+                          child: Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: const BoxDecoration(
+                              color: AppColors.error,
+                              shape: BoxShape.circle,
+                            ),
+                            constraints: const BoxConstraints(
+                              minWidth: 18,
+                              minHeight: 18,
+                            ),
+                            child: Text(
+                              '$_activeFiltersCount',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 10,
+                                fontWeight: FontWeight.w700,
+                              ),
+                              textAlign: TextAlign.center,
                             ),
                           ),
                         ),
-                        if (_activeFiltersCount > 0)
-                          Positioned(
-                            right: -2,
-                            top: -2,
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 6,
-                                vertical: 2,
-                              ),
-                              decoration: BoxDecoration(
-                                color: AppColors.primary,
-                                borderRadius: BorderRadius.circular(999),
-                              ),
-                              child: Text(
-                                '$_activeFiltersCount',
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
-                            ),
-                          ),
-                      ],
-                    ),
+                    ],
                   ),
                 ],
               ),
             ),
           ),
 
-          // Filter summary
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: Wrap(
-                spacing: 8,
-                runSpacing: 6,
-                children: [
-                  if (_gender.isNotEmpty) _pill(_gender, Icons.wc_rounded),
-                  if (_location.isNotEmpty)
-                    _pill(_location, Icons.location_on_outlined),
-                  _pill(
-                    'Age ${_ageRange.start.round()}–${_ageRange.end.round()}',
-                    Icons.cake_rounded,
-                  ),
-                  _pill(
-                    _sortBy == 'recent'
-                        ? 'Recent'
-                        : _sortBy == 'ageAsc'
-                        ? 'Age ↑'
-                        : 'Age ↓',
-                    Icons.sort_rounded,
-                  ),
-                ],
+          // Active filters
+          if (_activeFiltersCount > 0)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    if (_gender.isNotEmpty) _filterChip(_gender, Icons.wc_rounded),
+                    if (_location.isNotEmpty)
+                      _filterChip(_location, Icons.location_on_rounded),
+                    if (_ageRange.start > _kDefaultAge.start ||
+                        _ageRange.end < _kDefaultAge.end)
+                      _filterChip(
+                        '${_ageRange.start.round()}-${_ageRange.end.round()} yrs',
+                        Icons.cake_rounded,
+                      ),
+                    if (_sortBy != 'recent')
+                      _filterChip(
+                        _sortBy == 'ageAsc' ? 'Age ↑' : 'Age ↓',
+                        Icons.sort_rounded,
+                      ),
+                  ],
+                ),
               ),
             ),
-          ),
-          const SizedBox(height: 6),
 
+          // Profiles list
           Expanded(
             child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
               stream: usersQuery.snapshots(),
               builder: (context, snap) {
                 if (snap.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
+                  return _buildLoadingSkeleton();
                 }
                 if (!snap.hasData || snap.data!.docs.isEmpty) {
-                  return const Center(child: Text('No profiles yet.'));
+                  return _buildEmptyState();
                 }
 
                 final list = _filterAndSort(snap.data!.docs);
 
                 if (list.isEmpty) {
-                  return const Center(child: Text('No matching profiles'));
+                  return _buildNoMatchesState();
                 }
 
-                return ListView.separated(
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-                  itemCount: list.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 12),
-                  itemBuilder: (_, i) {
-                    final u = list[i];
-                    final name = _cap(u['name']?.toString());
-                    final profession = _cap(u['profession']?.toString());
-                    final address = _cap(u['address']?.toString());
-                    final photo = (u['photoUrl'] ?? '').toString();
-                    final createdAt = u['createdAt'];
-                    final joined = createdAt is Timestamp
-                        ? DateFormat.yMMMd().format(createdAt.toDate())
-                        : 'N/A';
-                    final age = _ageOf(u['dob']);
-
-                    return _ProfileTile(
-                      name: name,
-                      profession: profession,
-                      address: address,
-                      age: age,
-                      photoUrl: photo,
-                      joinedAt: joined,
-                      user: u,
-                      onTap: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => ProfileDetailScreen(userData: u),
-                        ),
-                      ),
-                      onConnect: () {},
-                    );
+                return RefreshIndicator(
+                  onRefresh: () async {
+                    HapticFeedback.mediumImpact();
+                    // Data is already streaming, just provide feedback
+                    await Future.delayed(const Duration(milliseconds: 500));
                   },
+                  color: AppColors.primary,
+                  child: ListView.separated(
+                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 80),
+                    physics: const AlwaysScrollableScrollPhysics(
+                      parent: BouncingScrollPhysics(),
+                    ),
+                    itemCount: list.length,
+                    separatorBuilder: (_, __) => const SizedBox(height: 14),
+                    itemBuilder: (_, i) {
+                      final u = list[i];
+                      return _EnhancedProfileCard(
+                        userData: u,
+                        index: i,
+                        onTap: () {
+                          HapticFeedback.selectionClick();
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => ProfileDetailScreen(userData: u),
+                            ),
+                          );
+                        },
+                        ageOf: _ageOf,
+                      );
+                    },
+                  ),
                 );
               },
             ),
@@ -701,20 +725,147 @@ class _MatrimonialScreenState extends State<MatrimonialScreen> {
     );
   }
 
-  Widget _pill(String text, IconData icon) {
+  Widget _filterChip(String text, IconData icon) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      margin: const EdgeInsets.only(right: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border.all(color: AppColors.border),
-        borderRadius: BorderRadius.circular(999),
+        color: AppColors.primary.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: AppColors.primary.withOpacity(0.3),
+          width: 1,
+        ),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(icon, size: 14, color: AppColors.primary),
           const SizedBox(width: 6),
-          Text(text, style: const TextStyle(fontWeight: FontWeight.w600)),
+          Text(
+            text,
+            style: const TextStyle(
+              fontWeight: FontWeight.w600,
+              color: AppColors.primary,
+              fontSize: 13,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLoadingSkeleton() {
+    return ListView.separated(
+      padding: const EdgeInsets.all(16),
+      itemCount: 5,
+      separatorBuilder: (_, __) => const SizedBox(height: 14),
+      itemBuilder: (_, __) => const _ProfileCardSkeleton(),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: AppColors.primary.withOpacity(0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.people_outline_rounded,
+              size: 64,
+              color: AppColors.primary.withOpacity(0.5),
+            ),
+          ),
+          const SizedBox(height: 24),
+          const Text(
+            'No Profiles Yet',
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w700,
+              color: AppColors.text,
+            ),
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'Check back later for new profiles',
+            style: TextStyle(
+              fontSize: 15,
+              color: AppColors.subtitle,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNoMatchesState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: AppColors.primary.withOpacity(0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.search_off_rounded,
+              size: 64,
+              color: AppColors.primary.withOpacity(0.5),
+            ),
+          ),
+          const SizedBox(height: 24),
+          const Text(
+            'No Matches Found',
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w700,
+              color: AppColors.text,
+            ),
+          ),
+          const SizedBox(height: 8),
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 40),
+            child: Text(
+              'Try adjusting your filters or search query',
+              style: TextStyle(
+                fontSize: 15,
+                color: AppColors.subtitle,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ),
+          const SizedBox(height: 20),
+          ElevatedButton.icon(
+            onPressed: () {
+              HapticFeedback.selectionClick();
+              setState(() {
+                _searchCtrl.clear();
+                _search = '';
+                _gender = '';
+                _location = '';
+                _ageRange = _kDefaultAge;
+                _sortBy = 'recent';
+                _activeFiltersCount = 0;
+              });
+            },
+            icon: const Icon(Icons.refresh_rounded),
+            label: const Text('Clear All Filters'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -726,195 +877,353 @@ class _MatrimonialScreenState extends State<MatrimonialScreen> {
   }
 }
 
-class _ProfileTile extends StatelessWidget {
+/* ==================== Enhanced Profile Card ==================== */
+
+class _EnhancedProfileCard extends StatefulWidget {
+  final Map<String, dynamic> userData;
+  final int index;
+  final VoidCallback onTap;
+  final int? Function(dynamic) ageOf;
+
+  const _EnhancedProfileCard({
+    required this.userData,
+    required this.index,
+    required this.onTap,
+    required this.ageOf,
+  });
+
+  @override
+  State<_EnhancedProfileCard> createState() => _EnhancedProfileCardState();
+}
+
+class _EnhancedProfileCardState extends State<_EnhancedProfileCard>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _fadeAnimation;
+  late Animation<Offset> _slideAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 400),
+      vsync: this,
+    );
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeIn),
+    );
+    _slideAnimation = Tween<Offset>(
+      begin: const Offset(0, 0.1),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeOutCubic,
+    ));
+
+    Future.delayed(Duration(milliseconds: 50 * widget.index), () {
+      if (mounted) _controller.forward();
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
   String _cap(String? s) {
     if (s == null || s.isEmpty) return '';
     return s[0].toUpperCase() + s.substring(1);
   }
 
-  const _ProfileTile({
-    required this.name,
-    required this.profession,
-    required this.address,
-    required this.age,
-    required this.photoUrl,
-    required this.joinedAt,
-    required this.onTap,
-    required this.onConnect,
-    required this.user,
-  });
+  @override
+  Widget build(BuildContext context) {
+    final u = widget.userData;
+    final name = _cap(u['name']?.toString());
+    final profession = _cap(u['profession']?.toString());
+    final education = _cap(u['education']?.toString());
+    final address = _cap(u['address']?.toString());
+    final photo = (u['photoUrl'] ?? '').toString();
+    final age = widget.ageOf(u['dob']);
+    final phone = (u['mobile'] ?? u['phone'] ?? '').toString().trim();
+    final uid = (u['_id'] ?? '').toString();
+    final gender = (u['gender'] ?? '').toString();
 
-  final String name;
-  final String profession;
-  final String address;
-  final int? age;
-  final String photoUrl;
-  final String joinedAt;
+    return FadeTransition(
+      opacity: _fadeAnimation,
+      child: SlideTransition(
+        position: _slideAnimation,
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: widget.onTap,
+            borderRadius: BorderRadius.circular(16),
+            child: Container(
+              decoration: BoxDecoration(
+                color: AppColors.card,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: AppColors.border.withOpacity(0.3),
+                  width: 1,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.primary.withOpacity(0.08),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  children: [
+                    // Enhanced Avatar
+                    Container(
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: LinearGradient(
+                          colors: [
+                            AppColors.primary.withOpacity(0.2),
+                            AppColors.accent.withOpacity(0.2),
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.primary.withOpacity(0.2),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      padding: const EdgeInsets.all(3),
+                      child: CircleAvatar(
+                        radius: 36,
+                        backgroundColor: AppColors.background,
+                        backgroundImage:
+                            photo.isNotEmpty ? NetworkImage(photo) : null,
+                        child: photo.isEmpty
+                            ? Icon(
+                                gender.toLowerCase() == 'female'
+                                    ? Icons.person_rounded
+                                    : Icons.person_outline_rounded,
+                                color: AppColors.primary,
+                                size: 36,
+                              )
+                            : null,
+                      ),
+                    ),
+
+                    const SizedBox(width: 16),
+
+                    // Content
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Name and Age
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  name,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                    fontSize: 17,
+                                    fontWeight: FontWeight.w800,
+                                    color: AppColors.text,
+                                  ),
+                                ),
+                              ),
+                              if (age != null)
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 4,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.primary.withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Text(
+                                    '$age yrs',
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w700,
+                                      color: AppColors.primary,
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+
+                          const SizedBox(height: 6),
+
+                          // Profession & Education
+                          if (profession.isNotEmpty || education.isNotEmpty)
+                            Row(
+                              children: [
+                                const Icon(
+                                  Icons.work_outline_rounded,
+                                  size: 14,
+                                  color: AppColors.subtitle,
+                                ),
+                                const SizedBox(width: 6),
+                                Expanded(
+                                  child: Text(
+                                    [profession, education]
+                                        .where((e) => e.isNotEmpty)
+                                        .join(' • '),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      color: AppColors.subtitle,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+
+                          const SizedBox(height: 4),
+
+                          // Address
+                          if (address.isNotEmpty)
+                            Row(
+                              children: [
+                                const Icon(
+                                  Icons.location_on_outlined,
+                                  size: 14,
+                                  color: AppColors.subtitle,
+                                ),
+                                const SizedBox(width: 6),
+                                Expanded(
+                                  child: Text(
+                                    address,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      color: AppColors.subtitle,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+
+                          const SizedBox(height: 12),
+
+                          // Action Buttons
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              // Call button
+                              if (phone.isNotEmpty)
+                                _ActionButton(
+                                  icon: Icons.call_rounded,
+                                  label: 'Call',
+                                  color: Colors.green,
+                                  onTap: () async {
+                                    HapticFeedback.mediumImpact();
+                                    final uri = Uri.parse('tel:$phone');
+                                    if (await canLaunchUrl(uri)) {
+                                      await launchUrl(uri);
+                                    }
+                                  },
+                                ),
+
+                              const SizedBox(width: 10),
+
+                              // Chat button
+                              _ActionButton(
+                                icon: Icons.chat_bubble_rounded,
+                                label: 'Chat',
+                                color: AppColors.primary,
+                                onTap: () async {
+                                  HapticFeedback.mediumImpact();
+                                  await ChatService.ensureConversation(
+                                    peerId: uid,
+                                    peerName: name,
+                                    peerPhoto: photo,
+                                    initialMessage: '',
+                                  );
+
+                                  if (context.mounted) {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) => ChatScreen(
+                                          peerId: uid,
+                                          peerName: name,
+                                          peerPhoto: photo,
+                                        ),
+                                      ),
+                                    );
+                                  }
+                                },
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/* ==================== Action Button ==================== */
+
+class _ActionButton extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final Color color;
   final VoidCallback onTap;
-  final VoidCallback onConnect;
-  final Map<String, dynamic> user;
+
+  const _ActionButton({
+    required this.icon,
+    required this.label,
+    required this.color,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final phone = (user['mobile'] ?? user['phone'] ?? '').toString().trim();
-    final name = _cap(user['name']?.toString());
-    final uid = (user['_id'] ?? '').toString();
-
     return Material(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(12),
-      elevation: 2,
-      shadowColor: Colors.black12,
+      color: color.withOpacity(0.1),
+      borderRadius: BorderRadius.circular(10),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.all(12),
+        borderRadius: BorderRadius.circular(10),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+          decoration: BoxDecoration(
+            border: Border.all(
+              color: color.withOpacity(0.3),
+              width: 1,
+            ),
+            borderRadius: BorderRadius.circular(10),
+          ),
           child: Row(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              CircleAvatar(
-                radius: 30,
-                backgroundColor: AppColors.primary.withOpacity(0.15),
-                backgroundImage: photoUrl.isNotEmpty
-                    ? NetworkImage(photoUrl)
-                    : null,
-                child: photoUrl.isEmpty
-                    ? const Icon(
-                        Icons.person,
-                        color: AppColors.primary,
-                        size: 30,
-                      )
-                    : null,
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            name,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w800,
-                            ),
-                          ),
-                        ),
-                        if (age != null)
-                          Text(
-                            '$age yrs',
-                            style: const TextStyle(
-                              color: Colors.black54,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                      ],
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      [
-                        profession,
-                        address,
-                      ].where((e) => e.isNotEmpty).join(' • '),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(color: Colors.black87),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Joined $joinedAt',
-                      style: const TextStyle(color: Colors.grey, fontSize: 12),
-                    ),
-                    SizedBox(height: 16),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        Spacer(),
-                        GestureDetector(
-                          onTap: () async {
-                            final uri = Uri.parse('tel:$phone');
-                            await launchUrl(uri);
-                          },
-                          child: Container(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 4,
-                            ),
-                            decoration: BoxDecoration(
-                              border: Border.all(width: 1, color: Colors.blue),
-                              borderRadius: BorderRadius.all(
-                                Radius.circular(16),
-                              ),
-                            ),
-                            child: Row(
-                              children: [
-                                Icon(Icons.call_rounded, color: Colors.blue),
-                                SizedBox(width: 8),
-                                Text(
-                                  'Call',
-                                  style: TextStyle(color: Colors.blue),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        SizedBox(width: 16),
-                        GestureDetector(
-                          onTap: () async {
-                            await ChatService.ensureConversation(
-                              peerId: uid,
-                              peerName: name,
-                              peerPhoto: user['photoUrl']?.toString() ?? '',
-                              initialMessage: '',
-                            );
-
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => ChatScreen(
-                                  peerId: uid,
-                                  peerName: name,
-                                  peerPhoto: user['photoUrl']?.toString() ?? '',
-                                ),
-                              ),
-                            );
-                          },
-                          child: Container(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 4,
-                            ),
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.all(
-                                Radius.circular(16),
-                              ),
-                              border: Border.all(
-                                width: 1,
-                                color: AppColors.accent.withOpacity(0.4),
-                              ),
-                            ),
-                            child: Row(
-                              children: [
-                                Icon(
-                                  Icons.chat_bubble_rounded,
-                                  color: Colors.green,
-                                ),
-                                SizedBox(width: 8),
-                                Text(
-                                  'Start Chat',
-                                  style: TextStyle(color: Colors.green),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
+              Icon(icon, size: 16, color: color),
+              const SizedBox(width: 6),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: color,
                 ),
               ),
             ],
@@ -925,21 +1234,180 @@ class _ProfileTile extends StatelessWidget {
   }
 }
 
-class _SectionTitle extends StatelessWidget {
+/* ==================== Loading Skeleton ==================== */
+
+class _ProfileCardSkeleton extends StatefulWidget {
+  const _ProfileCardSkeleton();
+
+  @override
+  State<_ProfileCardSkeleton> createState() => _ProfileCardSkeletonState();
+}
+
+class _ProfileCardSkeletonState extends State<_ProfileCardSkeleton>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 1200),
+      vsync: this,
+    )..repeat(reverse: true);
+    _animation = Tween(begin: 0.3, end: 0.7).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FadeTransition(
+      opacity: _animation,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: AppColors.card,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: AppColors.border.withOpacity(0.3)),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 72,
+              height: 72,
+              decoration: BoxDecoration(
+                color: AppColors.border.withOpacity(0.3),
+                shape: BoxShape.circle,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _bar(width: double.infinity, height: 16),
+                  const SizedBox(height: 8),
+                  _bar(width: 150, height: 12),
+                  const SizedBox(height: 6),
+                  _bar(width: 120, height: 12),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _bar({required double width, required double height}) {
+    return Container(
+      width: width,
+      height: height,
+      decoration: BoxDecoration(
+        color: AppColors.border.withOpacity(0.3),
+        borderRadius: BorderRadius.circular(8),
+      ),
+    );
+  }
+}
+
+/* ==================== Filter Widgets ==================== */
+
+class _EnhancedSectionTitle extends StatelessWidget {
   final IconData icon;
   final String title;
-  const _SectionTitle({required this.icon, required this.title});
+  const _EnhancedSectionTitle({required this.icon, required this.title});
+
   @override
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Icon(icon, size: 18, color: Colors.white70),
-        const SizedBox(width: 8),
+        Container(
+          padding: const EdgeInsets.all(6),
+          decoration: BoxDecoration(
+            color: AppColors.primary.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(icon, size: 16, color: AppColors.primary),
+        ),
+        const SizedBox(width: 10),
         Text(
           title,
-          style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
+          style: const TextStyle(
+            fontWeight: FontWeight.w700,
+            fontSize: 15,
+            color: AppColors.text,
+          ),
         ),
       ],
+    );
+  }
+}
+
+class _EnhancedChoiceChip extends StatelessWidget {
+  final String label;
+  final IconData? icon;
+  final bool selected;
+  final VoidCallback onSelected;
+
+  const _EnhancedChoiceChip({
+    required this.label,
+    this.icon,
+    required this.selected,
+    required this.onSelected,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: selected
+          ? AppColors.primary.withOpacity(0.12)
+          : AppColors.background,
+      borderRadius: BorderRadius.circular(12),
+      child: InkWell(
+        onTap: onSelected,
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          decoration: BoxDecoration(
+            border: Border.all(
+              color: selected
+                  ? AppColors.primary.withOpacity(0.3)
+                  : AppColors.border.withOpacity(0.3),
+              width: 1.5,
+            ),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (icon != null) ...[
+                Icon(
+                  icon,
+                  size: 16,
+                  color: selected ? AppColors.primary : AppColors.subtitle,
+                ),
+                const SizedBox(width: 8),
+              ],
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: selected ? AppColors.primary : AppColors.text,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
@@ -947,17 +1415,26 @@ class _SectionTitle extends StatelessWidget {
 class _AgeBubble extends StatelessWidget {
   final int value;
   const _AgeBubble({required this.value});
+
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
       decoration: BoxDecoration(
-        color: Colors.white10,
-        borderRadius: BorderRadius.circular(999),
+        color: AppColors.primary.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: AppColors.primary.withOpacity(0.2),
+          width: 1,
+        ),
       ),
       child: Text(
         '$value yrs',
-        style: const TextStyle(fontWeight: FontWeight.w600),
+        style: const TextStyle(
+          fontWeight: FontWeight.w700,
+          color: AppColors.primary,
+          fontSize: 14,
+        ),
       ),
     );
   }

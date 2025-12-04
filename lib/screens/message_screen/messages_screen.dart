@@ -8,7 +8,7 @@ import 'package:vvs_app/services/chat_service.dart';
 // If you don't use Firestore here, remove this line
 // import 'package:cloud_firestore/cloud_firestore.dart';
 
-import 'chat_screen.dart'; // ensure ChatScreen is imported if it’s in another file
+// ensure ChatScreen is imported if it’s in another file
 
 class MessagesScreen extends StatefulWidget {
   const MessagesScreen({super.key});

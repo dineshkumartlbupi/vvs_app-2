@@ -195,10 +195,11 @@ class _FamilyRegistrationScreenState extends State<FamilyRegistrationScreen> {
                 }
 
                 final rawDocs = snapshot.data?.docs ?? [];
-                if (rawDocs.isEmpty)
+                if (rawDocs.isEmpty) {
                   return _buildEmptyState(
                     'No family members yet. Add one using the button below.',
                   );
+                }
 
                 // Map to safe structures (preserve docId)
                 final docs = rawDocs.map((d) {
@@ -215,10 +216,11 @@ class _FamilyRegistrationScreenState extends State<FamilyRegistrationScreen> {
                   return createdBy == _currentUid;
                 }).toList();
 
-                if (owned.isEmpty)
+                if (owned.isEmpty) {
                   return _buildEmptyState(
                     'You have not added any members yet.',
                   );
+                }
 
                 // Further apply search filter
                 final filtered = owned.where((data) {
@@ -235,8 +237,9 @@ class _FamilyRegistrationScreenState extends State<FamilyRegistrationScreen> {
                       gender.contains(_searchQuery);
                 }).toList();
 
-                if (filtered.isEmpty)
+                if (filtered.isEmpty) {
                   return _buildEmptyState('No matching members found.');
+                }
 
                 return ListView.separated(
                   padding: const EdgeInsets.symmetric(

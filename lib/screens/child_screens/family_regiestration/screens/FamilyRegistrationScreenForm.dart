@@ -119,30 +119,26 @@ class _FamilyRegistrationScreenFormState
           // The signature we used earlier in examples was:
           // FamilyController.saveMember(context:..., name:..., ...)
           // But here we try a generic method first; adjust if your controller API differs.
-          if (FamilyController.saveMember != null) {
-            // If your FamilyController.saveMember method expects named arguments, call it:
-            await FamilyController.saveMember(
-              context: context,
-              name: data['name'],
-              relation: data['relation'],
-              age: data['age'],
-              dob: data['dob'],
-              gender: data['gender'],
-              maritalStatus: data['maritalStatus'],
-              occupation: data['occupation'],
-              qualification: data['qualification'],
-              profession: data['profession'],
-              email: data['email'],
-              mobile: data['phone'],
-              address: data['address'],
-              bloodGroup: data['bloodGroup'],
-              aadhaarNumber: data['aadhaarNumber'],
-              // you may add createdBy/createdAt if controller supports it
-            );
-          } else {
-            throw Exception('Controller saveMember not available');
-          }
-        } catch (_) {
+          // If your FamilyController.saveMember method expects named arguments, call it:
+          await FamilyController.saveMember(
+            context: context,
+            name: data['name'],
+            relation: data['relation'],
+            age: data['age'],
+            dob: data['dob'],
+            gender: data['gender'],
+            maritalStatus: data['maritalStatus'],
+            occupation: data['occupation'],
+            qualification: data['qualification'],
+            profession: data['profession'],
+            email: data['email'],
+            mobile: data['phone'],
+            address: data['address'],
+            bloodGroup: data['bloodGroup'],
+            aadhaarNumber: data['aadhaarNumber'],
+            // you may add createdBy/createdAt if controller supports it
+          );
+                } catch (_) {
           // Fallback to Firestore direct add
           await FirebaseFirestore.instance.collection('family_members').add(data);
         }
@@ -154,12 +150,8 @@ class _FamilyRegistrationScreenFormState
 
         try {
           // Prefer controller update method if available
-          if (FamilyController.updateMember != null) {
-            await FamilyController.updateMember(widget.docId!, data);
-          } else {
-            throw Exception('Controller updateMember not available');
-          }
-        } catch (_) {
+          await FamilyController.updateMember(widget.docId!, data);
+                } catch (_) {
           // Fallback to Firestore direct update
           await FirebaseFirestore.instance.collection('family_members').doc(widget.docId).update(data);
         }

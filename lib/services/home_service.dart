@@ -10,7 +10,6 @@ class HomeService {
       final families = await _firestore.collection('family_members').count().get();
       final donors = await _firestore.collection('donors').count().get();
       final events = await _firestore.collection('events').count().get();
-
       return {
         'members': members.count!,
         'families': families.count!,

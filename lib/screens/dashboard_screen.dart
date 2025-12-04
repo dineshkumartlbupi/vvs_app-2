@@ -7,7 +7,7 @@ import 'package:vvs_app/screens/child_screens/founder_screen.dart';
 import 'package:vvs_app/screens/child_screens/marketplace/screens/marketplace_screen.dart';
 import 'package:vvs_app/screens/child_screens/vvs_id_card_screen.dart';
 import 'package:vvs_app/screens/home_screen.dart';
-import 'package:vvs_app/screens/child_screens/profile/screens/profile_screen.dart.dart';
+import 'package:vvs_app/screens/child_screens/profile/screens/profile_screen.dart';
 import 'package:vvs_app/screens/child_screens/news/screens/news_bulletin_screen.dart';
 import 'package:vvs_app/screens/child_screens/materimonial/screens/matrimonial_screen.dart';
 import 'package:vvs_app/screens/child_screens/marketplace/directory_screens/directory_screen.dart';

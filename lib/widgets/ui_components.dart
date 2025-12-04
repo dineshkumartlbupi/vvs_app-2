@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../theme/app_colors.dart';
 
 /* ============================== TITLES ============================== */
@@ -125,6 +126,7 @@ class AppInput extends StatelessWidget {
   final bool readOnly;
   final VoidCallback? onTap;
   final int? maxLines;
+  final List<TextInputFormatter>? inputFormatters;
 
   const AppInput({
     super.key,
@@ -142,6 +144,7 @@ class AppInput extends StatelessWidget {
     this.readOnly = false,
     this.onTap,
     this.maxLines = 1,
+    this.inputFormatters,
   });
 
   @override
@@ -160,6 +163,7 @@ class AppInput extends StatelessWidget {
       readOnly: readOnly,
       onTap: onTap,
       maxLines: obscureText ? 1 : maxLines,
+      inputFormatters: inputFormatters,
       style: const TextStyle(fontSize: 15, height: 1.4),
       decoration: InputDecoration(
         labelText: label,

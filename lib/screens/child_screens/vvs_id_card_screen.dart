@@ -193,7 +193,7 @@ class VvsIdCardScreen extends StatelessWidget {
                               const SizedBox(width: 16),
 
                               // right side: id block + qr
-                              Container(width: 210, child: _idAndQrBlock(vvsId: vvsId, regCode: regCode)),
+                              SizedBox(width: 210, child: _idAndQrBlock(vvsId: vvsId, regCode: regCode)),
                             ],
                           ),
                   ),
