@@ -182,14 +182,16 @@ class _HomeScreenState extends State<HomeScreen>
                   const SizedBox(height: 20),
 
                   // Stats Strip (moved to top for prominence)
+                   // News Banner with graceful states
+                  _buildNewsSection(),
+
+                  const SizedBox(height: 24),
+                  
                   _buildStatsSection(),
 
                   const SizedBox(height: 24),
 
-                  // News Banner with graceful states
-                  _buildNewsSection(),
-
-                  const SizedBox(height: 24),
+                 
 
                   // Quick Actions
                   _SectionHeader(
