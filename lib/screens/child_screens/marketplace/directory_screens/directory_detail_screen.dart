@@ -1,12 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:vvs_app/theme/app_colors.dart';
 import 'package:vvs_app/widgets/ui_components.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 
 class DirectoryDetailScreen extends StatelessWidget {
   final String docId;
   final Map<String, dynamic> data;
-  const DirectoryDetailScreen({super.key, required this.docId, required this.data});
+
+  const DirectoryDetailScreen({
+    super.key,
+    required this.docId,
+    required this.data,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -22,175 +27,344 @@ class DirectoryDetailScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: Text(name.isNotEmpty ? name : 'Profile'),
-        backgroundColor: AppColors.primary,
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // header
-            Row(
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
-                  child: Container(
-                    width: 96,
-                    height: 96,
-                    color: AppColors.primary.withOpacity(0.08),
-                    child: photoUrl.isNotEmpty
-                        ? Image.network(photoUrl, fit: BoxFit.cover)
-                        : Icon(Icons.person, size: 56, color: AppColors.primary),
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(name, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
-                      const SizedBox(height: 6),
-                      Text(
-                        title.isNotEmpty ? title : (organization.isNotEmpty ? organization : ''),
-                        style: const TextStyle(fontSize: 14, color: Colors.black54),
+      body: CustomScrollView(
+        physics: const BouncingScrollPhysics(),
+        slivers: [
+          SliverAppBar(
+            expandedHeight: 280,
+            pinned: true,
+            backgroundColor: AppColors.primary,
+            flexibleSpace: FlexibleSpaceBar(
+              background: Stack(
+                fit: StackFit.expand,
+                children: [
+                  Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          AppColors.primary,
+                          AppColors.primary.withOpacity(0.8),
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
                       ),
-                      const SizedBox(height: 8),
-                      if (location.isNotEmpty) Text(location, style: const TextStyle(fontSize: 13, color: Colors.black45)),
+                    ),
+                  ),
+                  // Abstract background pattern or circles
+                  Positioned(
+                    top: -50,
+                    right: -50,
+                    child: CircleAvatar(
+                      radius: 100,
+                      backgroundColor: Colors.white.withOpacity(0.1),
+                    ),
+                  ),
+                  Positioned(
+                    bottom: -30,
+                    left: -30,
+                    child: CircleAvatar(
+                      radius: 80,
+                      backgroundColor: Colors.white.withOpacity(0.1),
+                    ),
+                  ),
+                  Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const SizedBox(height: 40),
+                        Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(color: Colors.white, width: 3),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.2),
+                                blurRadius: 10,
+                                offset: const Offset(0, 5),
+                              ),
+                            ],
+                          ),
+                          child: CircleAvatar(
+                            radius: 60,
+                            backgroundColor: Colors.white,
+                            backgroundImage: photoUrl.isNotEmpty
+                                ? NetworkImage(photoUrl)
+                                : null,
+                            child: photoUrl.isEmpty
+                                ? const Icon(Icons.person,
+                                    size: 60, color: AppColors.primary)
+                                : null,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          name,
+                          style: const TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                        if (title.isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 4),
+                            child: Text(
+                              title,
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: Colors.white.withOpacity(0.9),
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Contact Actions
+                  if (phone.isNotEmpty || email.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 24),
+                      child: Row(
+                        children: [
+                          if (phone.isNotEmpty)
+                            Expanded(
+                              child: _ActionButton(
+                                icon: Icons.call_rounded,
+                                label: 'Call',
+                                color: Colors.green,
+                                onTap: () => _launchUrl('tel:$phone'),
+                              ),
+                            ),
+                          if (phone.isNotEmpty && email.isNotEmpty)
+                            const SizedBox(width: 12),
+                          if (email.isNotEmpty)
+                            Expanded(
+                              child: _ActionButton(
+                                icon: Icons.email_rounded,
+                                label: 'Email',
+                                color: AppColors.primary,
+                                onTap: () => _launchUrl('mailto:$email'),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+
+                  // Info Cards
+                  _buildInfoSection(
+                    title: 'Professional Details',
+                    icon: Icons.work_outline_rounded,
+                    children: [
+                      if (organization.isNotEmpty)
+                        _buildInfoRow(Icons.business_rounded, 'Organization', organization),
+                      if (title.isNotEmpty)
+                        _buildInfoRow(Icons.badge_rounded, 'Role', title),
+                      if (location.isNotEmpty)
+                        _buildInfoRow(Icons.location_on_outlined, 'Location', location),
                     ],
                   ),
-                ),
-              ],
-            ),
 
-            const SizedBox(height: 18),
+                  const SizedBox(height: 20),
 
-            // contact row
-            Card(
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                child: Row(
-                  children: [
-                    if (phone.isNotEmpty)
-                      _ContactButton(
-                        icon: Icons.call,
-                        label: phone,
-                        onPressed: () {
-                          // use url_launcher to actually call
-                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Call: $phone')));
-                        },
-                      ),
-                    if (email.isNotEmpty) const SizedBox(width: 8),
-                    if (email.isNotEmpty)
-                      _ContactButton(
-                        icon: Icons.mail_outline,
-                        label: email,
-                        onPressed: () {
-                          // use url_launcher mailto:
-                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Email: $email')));
-                        },
-                      ),
-                    const Spacer(),
-                    // Edit placeholder: link to your edit screen if you have one
-                    IconButton(
-                      tooltip: 'Edit (if permitted)',
-                      onPressed: () {
-                        // Optionally navigate to an edit screen if you support editing directory entries
-                      },
-                      icon: const Icon(Icons.edit),
-                    )
-                  ],
-                ),
+                  if (bio.isNotEmpty)
+                    _buildInfoSection(
+                      title: 'About',
+                      icon: Icons.info_outline_rounded,
+                      children: [
+                        Text(
+                          bio,
+                          style: const TextStyle(
+                            fontSize: 15,
+                            height: 1.6,
+                            color: AppColors.subtitle,
+                          ),
+                        ),
+                      ],
+                    ),
+
+                  const SizedBox(height: 20),
+
+                  if (socials.isNotEmpty)
+                    _buildInfoSection(
+                      title: 'Social Profiles',
+                      icon: Icons.share_rounded,
+                      children: [
+                        Wrap(
+                          spacing: 12,
+                          runSpacing: 12,
+                          children: socials.entries.map((e) {
+                            return ActionChip(
+                              avatar: Icon(_getSocialIcon(e.key), size: 18),
+                              label: Text(e.key),
+                              backgroundColor: AppColors.primary.withOpacity(0.1),
+                              labelStyle: const TextStyle(
+                                color: AppColors.primary,
+                                fontWeight: FontWeight.w600,
+                              ),
+                              onPressed: () {
+                                // Handle social link tap
+                              },
+                            );
+                          }).toList(),
+                        ),
+                      ],
+                    ),
+
+                  const SizedBox(height: 40),
+                ],
               ),
             ),
-
-            const SizedBox(height: 16),
-
-            // bio / about
-            if (bio.isNotEmpty) ...[
-              const AppTitle('About'),
-              const SizedBox(height: 8),
-              Text(bio, style: const TextStyle(fontSize: 14, height: 1.6)),
-              const SizedBox(height: 12),
-            ],
-
-            // socials
-            if (socials.isNotEmpty) ...[
-              const AppTitle('Socials'),
-              const SizedBox(height: 8),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: socials.entries.map((e) {
-                  return Chip(label: Text('${e.key}: ${e.value}'));
-                }).toList(),
-              ),
-              const SizedBox(height: 12),
-            ],
-
-            // metadata
-            const AppTitle('Details'),
-            const SizedBox(height: 8),
-            _metaRow('Organisation', organization),
-            _metaRow('Title', title),
-            _metaRow('Location', location),
-            _metaRow('Phone', phone),
-            _metaRow('Email', email),
-            const SizedBox(height: 20),
-
-            // share button (placeholder)
-            ElevatedButton.icon(
-              onPressed: () {
-                final info = StringBuffer()
-                  ..writeln(name)
-                  ..writeln(title)
-                  ..writeln(organization)
-                  ..writeln(location)
-                  ..writeln(phone.isNotEmpty ? 'Phone: $phone' : '')
-                  ..writeln(email.isNotEmpty ? 'Email: $email' : '');
-                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Share: ${info.toString()}')));
-                // replace with Share.share(info.toString()) if using share_plus
-              },
-              icon: const Icon(Icons.share),
-              label: const Text('Share Profile'),
-              style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _metaRow(String label, String value) {
-    if (value.isEmpty) return const SizedBox.shrink();
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: Row(
-        children: [
-          Text('$label: ', style: const TextStyle(fontWeight: FontWeight.w600)),
-          Expanded(child: Text(value, style: const TextStyle(color: Colors.black87))),
+          ),
         ],
       ),
     );
   }
+
+  Widget _buildInfoSection({
+    required String title,
+    required IconData icon,
+    required List<Widget> children,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, color: AppColors.primary, size: 20),
+              const SizedBox(width: 8),
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.text,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          ...children,
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoRow(IconData icon, String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: AppColors.background,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(icon, size: 16, color: AppColors.subtitle),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: AppColors.subtitle,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  value,
+                  style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.text,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _launchUrl(String url) async {
+    if (await canLaunchUrl(Uri.parse(url))) {
+      await launchUrl(Uri.parse(url));
+    }
+  }
+
+  IconData _getSocialIcon(String key) {
+    switch (key.toLowerCase()) {
+      case 'linkedin':
+        return Icons.business_center_rounded;
+      case 'twitter':
+      case 'x':
+        return Icons.alternate_email_rounded;
+      case 'facebook':
+        return Icons.facebook_rounded;
+      case 'instagram':
+        return Icons.camera_alt_rounded;
+      default:
+        return Icons.link_rounded;
+    }
+  }
 }
 
-class _ContactButton extends StatelessWidget {
+class _ActionButton extends StatelessWidget {
   final IconData icon;
   final String label;
-  final VoidCallback onPressed;
-  const _ContactButton({required this.icon, required this.label, required this.onPressed});
+  final Color color;
+  final VoidCallback onTap;
+
+  const _ActionButton({
+    required this.icon,
+    required this.label,
+    required this.color,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return OutlinedButton.icon(
-      onPressed: onPressed,
-      icon: Icon(icon),
-      label: Text(label, overflow: TextOverflow.ellipsis),
-      style: OutlinedButton.styleFrom(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+    return ElevatedButton.icon(
+      onPressed: onTap,
+      icon: Icon(icon, color: Colors.white, size: 20),
+      label: Text(label, style: const TextStyle(color: Colors.white)),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: color,
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        elevation: 2,
       ),
     );
   }

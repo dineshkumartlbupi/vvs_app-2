@@ -2,9 +2,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:vvs_app/theme/app_colors.dart';
+import 'package:vvs_app/widgets/ui_components.dart';
 
 class VvsIdCardScreen extends StatelessWidget {
   const VvsIdCardScreen({super.key});
@@ -12,7 +14,6 @@ class VvsIdCardScreen extends StatelessWidget {
   Stream<DocumentSnapshot<Map<String, dynamic>>> _userDocStream() {
     final uid = FirebaseAuth.instance.currentUser?.uid;
     if (uid == null) {
-      // If not signed in, return an empty stream of a missing doc so UI shows graceful empty state.
       return FirebaseFirestore.instance
           .collection('users')
           .doc('__missing__')
@@ -30,42 +31,15 @@ class VvsIdCardScreen extends StatelessWidget {
     if (ts == null) return '—';
     try {
       if (ts is Timestamp) return DateFormat.yMMMd().format(ts.toDate());
-      if (ts is int) return DateFormat.yMMMd().format(DateTime.fromMillisecondsSinceEpoch(ts));
+      if (ts is int)
+        return DateFormat.yMMMd()
+            .format(DateTime.fromMillisecondsSinceEpoch(ts));
       if (ts is String) {
         final parsed = DateTime.tryParse(ts);
         if (parsed != null) return DateFormat.yMMMd().format(parsed);
       }
     } catch (_) {}
     return '—';
-  }
-
-  Widget _avatar(String? url, String name, double size) {
-    final initials = name.trim().isEmpty
-        ? '?'
-        : name.trim().split(' ').map((e) => e.isNotEmpty ? e[0] : '').take(2).join().toUpperCase();
-
-    if (url != null && url.isNotEmpty) {
-      return CircleAvatar(
-        radius: size / 2,
-        backgroundColor: AppColors.primary.withOpacity(0.08),
-        backgroundImage: NetworkImage(url),
-        onBackgroundImageError: (_, __) {},
-        child: const SizedBox.shrink(),
-      );
-    }
-
-    return CircleAvatar(
-      radius: size / 2,
-      backgroundColor: AppColors.primary.withOpacity(0.12),
-      child: Text(
-        initials,
-        style: TextStyle(
-          color: AppColors.primary,
-          fontSize: size * 0.36,
-          fontWeight: FontWeight.w700,
-        ),
-      ),
-    );
   }
 
   @override
@@ -75,9 +49,10 @@ class VvsIdCardScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Varshney One ID Card'),
+        title: const Text('Varshney One ID'),
         backgroundColor: AppColors.primary,
         centerTitle: true,
+        elevation: 0,
       ),
       body: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
         stream: _userDocStream(),
@@ -89,262 +64,401 @@ class VvsIdCardScreen extends StatelessWidget {
           final doc = snap.data;
           final data = doc?.data() ?? <String, dynamic>{};
 
-          // fields with safe fallbacks
           final name = (data['name'] ?? data['displayName'] ?? '').toString();
-          final regCode = (data['registrationCode'] ?? data['regCode'] ?? '').toString();
-          // primary VVS id: prefer explicit field, else use Firebase uid
-          final vvsId = (data['vvsId'] ?? data['memberId'] ?? currentUid ?? '').toString();
+          final regCode =
+              (data['registrationCode'] ?? data['regCode'] ?? '').toString();
+          final vvsId =
+              (data['vvsId'] ?? data['memberId'] ?? currentUid ?? '').toString();
           final phone = (data['phone'] ?? data['mobile'] ?? '').toString();
           final email = (data['email'] ?? '').toString();
           final photo = (data['photoUrl'] ?? data['avatar'] ?? '').toString();
           final status = (data['status'] ?? 'Unverified').toString();
-          final profession = (data['profession'] ?? data['occupation'] ?? '').toString();
+          final profession =
+              (data['profession'] ?? data['occupation'] ?? '').toString();
           final address = (data['address'] ?? '').toString();
           final joined = _formatJoin(data['createdAt'] ?? data['joinedAt']);
 
-          // If no real user loaded (doc missing), show helpful empty state
           if ((doc == null || !doc.exists) && currentUid.isEmpty) {
-            return Center(
-              child: Padding(
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(Icons.person_off, size: 64, color: Colors.grey),
-                    const SizedBox(height: 12),
-                    const Text('Not signed in', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
-                    const SizedBox(height: 8),
-                    const Text('Please sign in to view your VVS ID card.', textAlign: TextAlign.center),
-                  ],
-                ),
-              ),
-            );
+            return _buildEmptyState();
           }
 
-          return LayoutBuilder(builder: (context, constraints) {
-            final isNarrow = constraints.maxWidth < 1080;
+          return SingleChildScrollView(
+            padding: const EdgeInsets.all(24),
+            physics: const BouncingScrollPhysics(),
+            child: Column(
+              children: [
+                // The ID Card
+                _buildIdCard(
+                  context,
+                  name: name,
+                  photo: photo,
+                  profession: profession,
+                  status: status,
+                  joined: joined,
+                  vvsId: vvsId,
+                  regCode: regCode,
+                ),
+                const SizedBox(height: 32),
 
-            return SingleChildScrollView(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                children: [
-                  Container(
-                     width: 1000,
-                    padding: const EdgeInsets.all(18),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(14),
-                      boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 10, offset: const Offset(0, 6))],
-                      border: Border.all(color: AppColors.border),
-                    ),
-                    child: isNarrow
-                        ? Column(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              _avatar(photo, name, 112),
-                              const SizedBox(height: 12),
-                              Text(name.isNotEmpty ? name : 'Unnamed Member', style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
-                              const SizedBox(height: 8),
-                              Text(profession.isNotEmpty ? profession : '—', style: const TextStyle(fontSize: 14)),
-                              const SizedBox(height: 12),
-                              Wrap(spacing: 8, alignment: WrapAlignment.center, children: [
-                                Chip(
-                                  backgroundColor: status.toLowerCase() == 'verified' ? Colors.green.shade50 : Colors.orange.shade50,
-                                  label: Text(status, style: TextStyle(color: status.toLowerCase() == 'verified' ? Colors.green.shade700 : Colors.orange.shade700, fontWeight: FontWeight.w700)),
-                                ),
-                               
-                              ]),
-                               Text('Joined $joined', style: const TextStyle(color: Colors.black54, fontSize: 12)),
-                              const SizedBox(height: 12),
-                              // id block + qr below
-                              _idAndQrBlock(vvsId: vvsId, regCode: regCode),
-                            ],
-                          )
-                        : Row(
-                            children: [
-                              Expanded(
-                                child: Row(
-                                  children: [
-                                    _avatar(photo, name, 112),
-                                    const SizedBox(width: 16),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Text(name.isNotEmpty ? name : 'Unnamed Member', style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
-                                          const SizedBox(height: 6),
-                                          Text(profession.isNotEmpty ? profession : '—', style: const TextStyle(fontSize: 14, color: Colors.black87)),
-                                          const SizedBox(height: 12),
-                                          Row(children: [
-                                            Chip(
-                                              backgroundColor: status.toLowerCase() == 'verified' ? Colors.green.shade50 : Colors.orange.shade50,
-                                              label: Text(status, style: TextStyle(color: status.toLowerCase() == 'verified' ? Colors.green.shade700 : Colors.orange.shade700, fontWeight: FontWeight.w700)),
-                                            ),
-                                            const SizedBox(width: 8),
-                                            Text('Joined $joined', style: const TextStyle(color: Colors.black54, fontSize: 12)),
-                                          ]),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
+                // Details Section
+                _buildDetailsSection(phone, email, address),
 
-                              const SizedBox(width: 16),
+                const SizedBox(height: 32),
 
-                              // right side: id block + qr
-                              SizedBox(width: 210, child: _idAndQrBlock(vvsId: vvsId, regCode: regCode)),
-                            ],
-                          ),
-                  ),
-
-                  const SizedBox(height: 18),
-
-                  // Contact & details card
-                  Container(
-                    constraints: const BoxConstraints(maxWidth: 980),
-                    padding: const EdgeInsets.all(14),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: AppColors.border),
-                      boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 6)],
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text('Contact', style: TextStyle(fontWeight: FontWeight.w800)),
-                        const SizedBox(height: 10),
-                        Row(
-                          children: [
-                            const Icon(Icons.phone, size: 18, color: Colors.black54),
-                            const SizedBox(width: 8),
-                            Expanded(child: Text(phone.isNotEmpty ? phone : '—')),
-                            const SizedBox(width: 12),
-                            const Icon(Icons.mail_outline, size: 18, color: Colors.black54),
-                            const SizedBox(width: 8),
-                            Flexible(child: Text(email.isNotEmpty ? email : '—', overflow: TextOverflow.ellipsis)),
-                          ],
-                        ),
-                        const SizedBox(height: 12),
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Icon(Icons.location_on_outlined, size: 18, color: Colors.black54),
-                            const SizedBox(width: 8),
-                            Expanded(child: Text(address.isNotEmpty ? address : '—')),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  const SizedBox(height: 18),
-
-                  // Action buttons (safe layout to avoid infinite constraints)
-                  Container(
-                    constraints: const BoxConstraints(maxWidth: 980),
-                    child: Align(
-                      alignment: Alignment.center,
-                      child: Wrap(
-                        spacing: 12,
-                        runSpacing: 8,
-                        alignment: WrapAlignment.center,
-                        children: [
-                          ElevatedButton.icon(
-                            onPressed: () {
-                              // TODO: implement share as image (RepaintBoundary -> toImage)
-                              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Share feature coming soon')));
-                            },
-                            icon: const Icon(Icons.share),
-                            label: const Text('Share ID'),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.primary,
-                              minimumSize: const Size(140, 44),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                            ),
-                          ),
-                          OutlinedButton.icon(
-                            onPressed: () {
-                              // TODO: implement download / print
-                              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Download feature coming soon')));
-                            },
-                            icon: const Icon(Icons.download_rounded),
-                            label: const Text('Download'),
-                            style: OutlinedButton.styleFrom(
-                              minimumSize: const Size(140, 44),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            );
-          });
+                // Actions
+                _buildActionButtons(context),
+              ],
+            ),
+          );
         },
       ),
     );
   }
 
-  // Extracted helper for ID block + QR
-  Widget _idAndQrBlock({required String vvsId, required String regCode}) {
-    final qrData = (vvsId.isNotEmpty) ? vvsId : (regCode.isNotEmpty ? regCode : '');
-    final showQr = qrData.isNotEmpty;
+  Widget _buildEmptyState() {
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.person_off_rounded,
+              size: 64, color: AppColors.subtitle.withOpacity(0.5)),
+          const SizedBox(height: 16),
+          const Text(
+            'Not Signed In',
+            style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: AppColors.text),
+          ),
+          const SizedBox(height: 8),
+          const Text('Please sign in to view your ID card.',
+              style: TextStyle(color: AppColors.subtitle)),
+        ],
+      ),
+    );
+  }
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Text('VVS MEMBER', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w700)),
-        const SizedBox(height: 8),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(8),
-            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 4)],
-          ),
-          child: Column(
-            children: [
-              Text('Reg. Code', style: TextStyle(color: AppColors.primary.withOpacity(0.7), fontSize: 12)),
-              const SizedBox(height: 6),
-              Text(regCode.isNotEmpty ? regCode : '—', style: const TextStyle(fontWeight: FontWeight.w700)),
-              const SizedBox(height: 10),
-              Text('VVS ID', style: TextStyle(color: AppColors.primary.withOpacity(0.7), fontSize: 12)),
-              const SizedBox(height: 6),
-              Text(vvsId.isNotEmpty ? vvsId : '—', style: const TextStyle(fontWeight: FontWeight.w700)),
-            ],
-          ),
+  Widget _buildIdCard(
+    BuildContext context, {
+    required String name,
+    required String photo,
+    required String profession,
+    required String status,
+    required String joined,
+    required String vvsId,
+    required String regCode,
+  }) {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(24),
+        gradient: LinearGradient(
+          colors: [
+            AppColors.primary,
+            AppColors.accent,
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
         ),
-        const SizedBox(height: 12),
-        showQr
-            ? Container(
-                width: 86,
-                height: 86,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(8),
-                  boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 6)],
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withOpacity(0.3),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Stack(
+        children: [
+          // Background Pattern
+          Positioned(
+            top: -50,
+            right: -50,
+            child: Icon(
+              Icons.verified_user_outlined,
+              size: 250,
+              color: Colors.white.withOpacity(0.05),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              children: [
+                // Header
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Image.asset(
+                      'assets/images/logo.png', // Ensure you have a logo asset or use Icon
+                      height: 40,
+                      errorBuilder: (_, __, ___) => const Icon(
+                          Icons.verified_user_rounded,
+                          color: Colors.white,
+                          size: 32),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                            color: Colors.white.withOpacity(0.3)),
+                      ),
+                      child: Text(
+                        'OFFICIAL MEMBER',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 1,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-                child: Center(
-                  child: QrImageView(
-                    data: qrData,
-                    version: QrVersions.auto,
-                    size: 70,
-                    gapless: true,
-                    backgroundColor: Colors.white,
+                const SizedBox(height: 24),
+
+                // Profile Info
+                Row(
+                  children: [
+                    Container(
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white, width: 3),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.2),
+                            blurRadius: 10,
+                          ),
+                        ],
+                      ),
+                      child: CircleAvatar(
+                        radius: 40,
+                        backgroundColor: Colors.white,
+                        backgroundImage: photo.isNotEmpty
+                            ? NetworkImage(photo)
+                            : null,
+                        child: photo.isEmpty
+                            ? const Icon(Icons.person,
+                                size: 40, color: AppColors.primary)
+                            : null,
+                      ),
+                    ),
+                    const SizedBox(width: 20),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            name.isNotEmpty ? name : 'Member Name',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            profession.isNotEmpty ? profession : 'Member',
+                            style: TextStyle(
+                              color: Colors.white.withOpacity(0.9),
+                              fontSize: 14,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: status.toLowerCase() == 'verified'
+                                  ? Colors.green.withOpacity(0.2)
+                                  : Colors.orange.withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(4),
+                              border: Border.all(
+                                color: status.toLowerCase() == 'verified'
+                                    ? Colors.greenAccent
+                                    : Colors.orangeAccent,
+                                width: 0.5,
+                              ),
+                            ),
+                            child: Text(
+                              status.toUpperCase(),
+                              style: TextStyle(
+                                color: status.toLowerCase() == 'verified'
+                                    ? Colors.greenAccent
+                                    : Colors.orangeAccent,
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 24),
+
+                // ID Details Grid
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: Colors.white.withOpacity(0.1)),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      _buildIdField('ID Number', vvsId.isNotEmpty ? vvsId : '---'),
+                      _buildIdField('Reg. Code', regCode.isNotEmpty ? regCode : '---'),
+                      _buildIdField('Joined', joined),
+                    ],
                   ),
                 ),
-              )
-            : Container(
-                width: 86,
-                height: 86,
-                decoration: BoxDecoration(color: Colors.grey[100], borderRadius: BorderRadius.circular(8)),
-                alignment: Alignment.center,
-                child: const Text('QR', style: TextStyle(fontSize: 12, color: Colors.black54)),
-              ),
+                const SizedBox(height: 24),
+
+                // QR Code
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: QrImageView(
+                    data: vvsId.isNotEmpty ? vvsId : 'VVS-APP',
+                    version: QrVersions.auto,
+                    size: 80,
+                    gapless: true,
+                    backgroundColor: Colors.white,
+                    foregroundColor: AppColors.text,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Scan to verify',
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.7),
+                    fontSize: 10,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildIdField(String label, String value) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label.toUpperCase(),
+          style: TextStyle(
+            color: Colors.white.withOpacity(0.6),
+            fontSize: 10,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          value,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 13,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDetailsSection(String phone, String email, String address) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Contact Information',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: AppColors.text,
+            ),
+          ),
+          const SizedBox(height: 16),
+          _buildDetailRow(Icons.phone_rounded, phone.isNotEmpty ? phone : 'Not provided'),
+          const Divider(height: 24),
+          _buildDetailRow(Icons.email_rounded, email.isNotEmpty ? email : 'Not provided'),
+          const Divider(height: 24),
+          _buildDetailRow(Icons.location_on_rounded, address.isNotEmpty ? address : 'Not provided'),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDetailRow(IconData icon, String text) {
+    return Row(
+      children: [
+        Icon(icon, size: 20, color: AppColors.subtitle),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Text(
+            text,
+            style: const TextStyle(
+              fontSize: 14,
+              color: AppColors.text,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildActionButtons(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: AppButton(
+            text: 'Share ID',
+            leadingIcon: Icons.share_rounded,
+            onPressed: () {
+              HapticFeedback.selectionClick();
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Sharing feature coming soon!')),
+              );
+            },
+          ),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: AppOutlinedButton(
+            text: 'Download',
+            leadingIcon: Icons.download_rounded,
+            onPressed: () {
+              HapticFeedback.selectionClick();
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Download feature coming soon!')),
+              );
+            },
+          ),
+        ),
       ],
     );
   }

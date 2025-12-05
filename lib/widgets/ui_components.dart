@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../theme/app_colors.dart';
 
-/* ============================== TITLES ============================== */
 
 /// Title Widget
 class AppTitle extends StatelessWidget {
@@ -217,13 +216,14 @@ class AppButton extends StatelessWidget {
   // Optional polish
   final IconData? leadingIcon;
   final bool emphasis; // slightly bigger & stronger shadow for primary CTAs
-
+  final bool isLoading;
   const AppButton({
     super.key,
     required this.text,
     required this.onPressed,
     this.leadingIcon,
     this.emphasis = false,
+    this.isLoading = false,
   });
 
   @override

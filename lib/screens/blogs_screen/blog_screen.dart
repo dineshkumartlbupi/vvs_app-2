@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:vvs_app/theme/app_colors.dart';
+import 'package:vvs_app/widgets/ui_components.dart';
 import 'add_blog_screen.dart';
 
 class BlogScreen extends StatefulWidget {
@@ -18,8 +19,11 @@ class _BlogScreenState extends State<BlogScreen>
 
   Future<void> _deleteBlog(String id) async {
     await _firestore.collection('blogs').doc(id).delete();
-    ScaffoldMessenger.of(context)
-        .showSnackBar(const SnackBar(content: Text('Blog deleted successfully')));
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Blog deleted successfully')),
+      );
+    }
   }
 
   String _capitalize(String text) {
@@ -46,43 +50,40 @@ class _BlogScreenState extends State<BlogScreen>
       child: Scaffold(
         backgroundColor: AppColors.background,
         appBar: AppBar(
-          toolbarHeight:48,
           title: const Text('Community Blogs'),
           centerTitle: true,
-          backgroundColor: Theme.of(context).primaryColor,
-          foregroundColor: Colors.white,
-          bottom: TabBar(
-            dividerHeight: 0,
+          backgroundColor: AppColors.primary,
+          elevation: 0,
+          bottom: const TabBar(
             indicatorColor: Colors.white,
-          labelColor: Colors.white, // active tab text color
-          unselectedLabelColor: Colors.white70, // inactive tab text color
+            labelColor: Colors.white,
+            unselectedLabelColor: Colors.white70,
             tabs: [
               Tab(text: "All Blogs"),
               Tab(text: "My Blogs"),
             ],
           ),
         ),
-        floatingActionButton: FloatingActionButton(
+        floatingActionButton: FloatingActionButton.extended(
           onPressed: () async {
             await Navigator.push(
               context,
               MaterialPageRoute(builder: (_) => const AddBlogScreen()),
             );
           },
-          backgroundColor: Theme.of(context).primaryColor,
-          tooltip: 'Add Blog',
-          child: const Icon(Icons.add),
+          backgroundColor: AppColors.primary,
+          icon: const Icon(Icons.edit_note_rounded),
+          label: const Text('Write Blog'),
         ),
         body: TabBarView(
           children: [
-            // All Blogs tab (no edit/delete)
             _buildBlogList(
-              query:
-                  _firestore.collection('blogs').orderBy('createdAt', descending: true),
+              query: _firestore
+                  .collection('blogs')
+                  .orderBy('createdAt', descending: true),
               showActions: false,
               uid: uid,
             ),
-            // My Blogs tab (with edit/delete)
             _buildBlogList(
               query: _firestore
                   .collection('blogs')
@@ -111,15 +112,26 @@ class _BlogScreenState extends State<BlogScreen>
 
         final docs = snapshot.data?.docs ?? [];
         if (docs.isEmpty) {
-          return const Center(
-            child: Text('No blogs yet. Be the first to write one!'),
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.article_outlined,
+                    size: 64, color: AppColors.subtitle.withOpacity(0.3)),
+                const SizedBox(height: 16),
+                const Text(
+                  'No blogs yet. Be the first to write one!',
+                  style: TextStyle(color: AppColors.subtitle),
+                ),
+              ],
+            ),
           );
         }
 
         return ListView.separated(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 80),
           itemCount: docs.length,
-          separatorBuilder: (_, __) => const SizedBox(height: 16),
+          separatorBuilder: (_, __) => const SizedBox(height: 20),
           itemBuilder: (context, i) {
             final data = docs[i].data() as Map<String, dynamic>;
             final id = docs[i].id;
@@ -132,114 +144,141 @@ class _BlogScreenState extends State<BlogScreen>
             return Container(
               decoration: BoxDecoration(
                 color: Colors.white,
-                border: Border.all(color: AppColors.border),
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.primary.withOpacity(0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
               ),
-              padding: const EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Title Row
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                        child: Text(
-                          title,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.indigo,
-                          ),
-                        ),
-                      ),
-                      if (showActions)
-                        Row(
-                          children: [
-                            GestureDetector(
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) => AddBlogScreen(
-                                      blogId: id,
-                                      existingData: data,
-                                    ),
-                                  ),
-                                );
-                              },
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 12, vertical: 4),
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(
-                                      width: 1, color: AppColors.primary),
-                                ),
-                                child: const Row(
-                                  children: [
-                                    Icon(Icons.edit,
-                                        size: 18, color: Colors.blueAccent),
-                                    SizedBox(width: 4),
-                                    Text("Edit",
-                                        style: TextStyle(color: Colors.blue)),
-                                  ],
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            GestureDetector(
-                              onTap: () => _deleteBlog(id),
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 12, vertical: 4),
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(
-                                      width: 1, color: AppColors.primary),
-                                ),
-                                child: const Row(
-                                  children: [
-                                    Icon(Icons.delete,
-                                        size: 18, color: Colors.redAccent),
-                                    SizedBox(width: 4),
-                                    Text("Delete",
-                                        style:
-                                            TextStyle(color: Colors.redAccent)),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 6),
-                  Text(
-                    'By $author ${createdAt != null ? '• ${_formatDate(createdAt)}' : ''}',
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: Colors.black54,
-                    ),
-                  ),
-
-                  const SizedBox(height: 10),
-                  if (imageUrl != null)
+                  if (imageUrl != null && imageUrl.toString().isNotEmpty)
                     ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius:
+                          const BorderRadius.vertical(top: Radius.circular(16)),
                       child: Image.network(
                         imageUrl,
-                        height: 180,
+                        height: 200,
                         width: double.infinity,
                         fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => Container(
+                          height: 200,
+                          color: Colors.grey[100],
+                          child: const Icon(Icons.image_not_supported_rounded,
+                              color: Colors.grey),
+                        ),
                       ),
                     ),
-                  if (imageUrl != null) const SizedBox(height: 10),
-
-                  Text(
-                    content,
-                    style: const TextStyle(fontSize: 14, height: 1.5),
+                  Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            CircleAvatar(
+                              radius: 12,
+                              backgroundColor: AppColors.primary.withOpacity(0.1),
+                              child: Text(
+                                author.isNotEmpty ? author[0].toUpperCase() : 'A',
+                                style: const TextStyle(
+                                    fontSize: 10,
+                                    color: AppColors.primary,
+                                    fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              author,
+                              style: const TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.subtitle,
+                              ),
+                            ),
+                            const Spacer(),
+                            if (createdAt != null)
+                              Text(
+                                _formatDate(createdAt),
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: AppColors.subtitle.withOpacity(0.6),
+                                ),
+                              ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          title,
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.text,
+                            height: 1.3,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          content,
+                          maxLines: 3,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontSize: 14,
+                            color: AppColors.subtitle,
+                            height: 1.5,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        Row(
+                          children: [
+                            TextButton(
+                              onPressed: () {
+                                // TODO: Navigate to full blog detail
+                              },
+                              style: TextButton.styleFrom(
+                                padding: EdgeInsets.zero,
+                                minimumSize: const Size(0, 0),
+                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              ),
+                              child: const Text(
+                                'Read More',
+                                style: TextStyle(
+                                  color: AppColors.primary,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                            const Spacer(),
+                            if (showActions) ...[
+                              IconButton(
+                                icon: const Icon(Icons.edit_rounded,
+                                    size: 20, color: AppColors.subtitle),
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => AddBlogScreen(
+                                        blogId: id,
+                                        existingData: data,
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.delete_rounded,
+                                    size: 20, color: Colors.redAccent),
+                                onPressed: () => _deleteBlog(id),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),

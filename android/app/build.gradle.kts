@@ -36,8 +36,8 @@ android {
         applicationId = "com.syniso.vvs"
         minSdk = 24
         targetSdk = flutter.targetSdkVersion
-        versionCode = 10
-        versionName = "1.1.0"
+        versionCode = 1
+        versionName = "1.0.0"
     }
 
     signingConfigs {

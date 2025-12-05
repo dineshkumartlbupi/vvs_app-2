@@ -30,19 +30,31 @@ class BloodDonorsScreen extends StatelessWidget {
         centerTitle: true,
         elevation: 0,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      body: Column(
+        children: [
+          // Filter Section
+          Container(
+            padding: const EdgeInsets.fromLTRB(20, 10, 20, 20),
+            decoration: BoxDecoration(
+              color: AppColors.background,
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.primary.withOpacity(0.05),
+                  blurRadius: 10,
+                  offset: const Offset(0, 5),
+                ),
+              ],
+            ),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: AppColors.border.withOpacity(0.5)),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    blurRadius: 6,
+                    color: Colors.black.withOpacity(0.03),
+                    blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),
                 ],
@@ -59,111 +71,184 @@ class BloodDonorsScreen extends StatelessWidget {
                 validator: (_) => null,
               ),
             ),
-            const SizedBox(height: 16),
-            Expanded(
-              child: Obx(() {
-                if (controller.isLoading.value) {
-                  return const Center(
-                    child: CircularProgressIndicator(color: AppColors.primary),
-                  );
-                }
+          ),
 
-                final donors = controller.filteredDonors;
+          // List Section
+          Expanded(
+            child: Obx(() {
+              if (controller.isLoading.value) {
+                return const Center(
+                  child: CircularProgressIndicator(color: AppColors.primary),
+                );
+              }
 
-                if (donors.isEmpty) {
-                  return Column(
+              final donors = controller.filteredDonors;
+
+              if (donors.isEmpty) {
+                return Center(
+                  child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.bloodtype, size: 80, color: Colors.grey[400]),
-                      const SizedBox(height: 10),
-                      const Text(
+                      Container(
+                        padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          color: AppColors.error.withOpacity(0.1),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          Icons.bloodtype_rounded,
+                          size: 60,
+                          color: AppColors.error.withOpacity(0.5),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
                         'No donors found',
-                        style: TextStyle(fontSize: 16, color: Colors.grey),
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.subtitle.withOpacity(0.7),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      const Text(
+                        'Try selecting a different blood group',
+                        style: TextStyle(color: AppColors.subtitle),
                       ),
                     ],
-                  );
-                }
+                  ),
+                );
+              }
 
-                return ListView.separated(
-                  itemCount: donors.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 12),
-                  itemBuilder: (ctx, i) {
-                    final donor = donors[i].data();
-                    final name = donor['name'] ?? 'No Name';
-                    final bloodGroup = donor['bloodGroup'] ?? '-';
-                    final mobile = donor['mobile'] ?? '-';
-                    final location = donor['location'] ?? 'Not specified';
+              return ListView.separated(
+                padding: const EdgeInsets.all(20),
+                physics: const BouncingScrollPhysics(),
+                itemCount: donors.length,
+                separatorBuilder: (_, __) => const SizedBox(height: 16),
+                itemBuilder: (ctx, i) {
+                  final donor = donors[i].data();
+                  final name = donor['name'] ?? 'No Name';
+                  final bloodGroup = donor['bloodGroup'] ?? '-';
+                  final mobile = donor['mobile'] ?? '-';
+                  final location = donor['location'] ?? 'Not specified';
 
-                    return Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.05),
-                            blurRadius: 6,
-                            offset: const Offset(0, 3),
-                          ),
-                        ],
-                      ),
-                      child: ListTile(
-                        contentPadding: const EdgeInsets.all(16),
-                        leading: CircleAvatar(
-                          radius: 28,
-                          backgroundColor: AppColors.primary.withOpacity(0.15),
-                          child: Text(
-                            bloodGroup,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.primary,
-                              fontSize: 16,
-                            ),
-                          ),
+                  return Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.primary.withOpacity(0.05),
+                          blurRadius: 15,
+                          offset: const Offset(0, 5),
                         ),
-                        title: Text(
-                          name,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 17,
-                          ),
-                        ),
-                        subtitle: Padding(
-                          padding: const EdgeInsets.only(top: 6),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                      ],
+                    ),
+                    child: Material(
+                      color: Colors.transparent,
+                      borderRadius: BorderRadius.circular(20),
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(20),
+                        onTap: () {
+                          // TODO: Show donor details or call action
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Row(
                             children: [
-                              Row(
-                                children: [
-                                  const Icon(Icons.phone, size: 15, color: Colors.grey),
-                                  const SizedBox(width: 6),
-                                  Text(mobile, style: const TextStyle(fontSize: 14)),
-                                ],
-                              ),
-                              const SizedBox(height: 4),
-                              Row(
-                                children: [
-                                  const Icon(Icons.location_on, size: 15, color: Colors.grey),
-                                  const SizedBox(width: 6),
-                                  Expanded(
-                                    child: Text(
-                                      location,
-                                      style: const TextStyle(fontSize: 14),
-                                      overflow: TextOverflow.ellipsis,
+                              Container(
+                                width: 60,
+                                height: 60,
+                                decoration: BoxDecoration(
+                                  color: AppColors.error.withOpacity(0.1),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Center(
+                                  child: Text(
+                                    bloodGroup,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w900,
+                                      color: AppColors.error,
+                                      fontSize: 20,
                                     ),
                                   ),
-                                ],
+                                ),
+                              ),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      name,
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 18,
+                                        color: AppColors.text,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Row(
+                                      children: [
+                                        Icon(Icons.location_on_rounded,
+                                            size: 14,
+                                            color: AppColors.subtitle.withOpacity(0.7)),
+                                        const SizedBox(width: 4),
+                                        Expanded(
+                                          child: Text(
+                                            location,
+                                            style: TextStyle(
+                                              fontSize: 13,
+                                              color: AppColors.subtitle.withOpacity(0.7),
+                                            ),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Row(
+                                      children: [
+                                        Icon(Icons.phone_rounded,
+                                            size: 14,
+                                            color: AppColors.subtitle.withOpacity(0.7)),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          mobile,
+                                          style: TextStyle(
+                                            fontSize: 13,
+                                            color: AppColors.subtitle.withOpacity(0.7),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: AppColors.primary.withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: const Icon(
+                                  Icons.phone_in_talk_rounded,
+                                  color: AppColors.primary,
+                                  size: 20,
+                                ),
                               ),
                             ],
                           ),
                         ),
                       ),
-                    );
-                  },
-                );
-              }),
-            ),
-          ],
-        ),
+                    ),
+                  );
+                },
+              );
+            }),
+          ),
+        ],
       ),
     );
   }

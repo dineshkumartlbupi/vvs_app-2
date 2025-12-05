@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:vvs_app/screens/events_screen/AddEventScreen.dart';
 import 'package:vvs_app/theme/app_colors.dart';
+import 'package:vvs_app/widgets/ui_components.dart';
 
 class EventsScreen extends StatefulWidget {
   const EventsScreen({super.key});
@@ -17,9 +18,11 @@ class _EventScreenState extends State<EventsScreen> {
 
   Future<void> _deleteEvent(String id) async {
     await _firestore.collection('events').doc(id).delete();
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('Event deleted successfully')));
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Event deleted successfully')),
+      );
+    }
   }
 
   String _formatDate(DateTime date) {
@@ -39,28 +42,28 @@ class _EventScreenState extends State<EventsScreen> {
         appBar: AppBar(
           title: const Text('Community Events'),
           centerTitle: true,
-          backgroundColor: Theme.of(context).primaryColor,
-          foregroundColor: Colors.white,
+          backgroundColor: AppColors.primary,
+          elevation: 0,
           bottom: const TabBar(
             indicatorColor: Colors.white,
-              dividerHeight: 0,
-          labelColor: Colors.white, // active tab text color
-          unselectedLabelColor: Colors.white70, // inactive tab text color
+            labelColor: Colors.white,
+            unselectedLabelColor: Colors.white70,
             tabs: [
               Tab(text: "All Events"),
               Tab(text: "My Events"),
             ],
           ),
         ),
-        floatingActionButton: FloatingActionButton(
-          backgroundColor: Theme.of(context).primaryColor,
+        floatingActionButton: FloatingActionButton.extended(
+          backgroundColor: AppColors.primary,
           onPressed: () async {
             await Navigator.push(
               context,
               MaterialPageRoute(builder: (_) => const AddEventScreen()),
             );
           },
-          child: const Icon(Icons.add,color: Colors.white,),
+          icon: const Icon(Icons.calendar_today_rounded),
+          label: const Text('Add Event'),
         ),
         body: TabBarView(
           children: [
@@ -99,12 +102,25 @@ class _EventScreenState extends State<EventsScreen> {
 
         final docs = snapshot.data?.docs ?? [];
         if (docs.isEmpty) {
-          return const Center(child: Text('No events found.'));
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.event_busy_rounded,
+                    size: 64, color: AppColors.subtitle.withOpacity(0.3)),
+                const SizedBox(height: 16),
+                const Text(
+                  'No events found.',
+                  style: TextStyle(color: AppColors.subtitle),
+                ),
+              ],
+            ),
+          );
         }
 
         return ListView.separated(
-          padding: const EdgeInsets.all(16),
-          separatorBuilder: (_, __) => const SizedBox(height: 16),
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 80),
+          separatorBuilder: (_, __) => const SizedBox(height: 20),
           itemCount: docs.length,
           itemBuilder: (context, i) {
             final data = docs[i].data() as Map<String, dynamic>;
@@ -121,125 +137,161 @@ class _EventScreenState extends State<EventsScreen> {
             return Container(
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppColors.border),
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.primary.withOpacity(0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
               ),
-              padding: const EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Title Row
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                        child: Text(
-                          title,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                            color: Colors.indigo,
+                  if (imageUrl != null && imageUrl.toString().isNotEmpty)
+                    Stack(
+                      children: [
+                        ClipRRect(
+                          borderRadius: const BorderRadius.vertical(
+                              top: Radius.circular(16)),
+                          child: Image.network(
+                            imageUrl,
+                            height: 180,
+                            width: double.infinity,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) => Container(
+                              height: 180,
+                              color: Colors.grey[100],
+                              child: const Icon(Icons.image_not_supported_rounded,
+                                  color: Colors.grey),
+                            ),
                           ),
                         ),
-                      ),
-                      if (showActions)
-                       if (showActions)
-                        Row(
-                          children: [
-                            GestureDetector(
-                              onTap: () {
-                                  Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) => AddEventScreen(
-                                      eventId: id,
-                                      existingData: data,
+                        if (date != null)
+                          Positioned(
+                            top: 12,
+                            right: 12,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 6),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(8),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.1),
+                                    blurRadius: 4,
+                                  ),
+                                ],
+                              ),
+                              child: Column(
+                                children: [
+                                  Text(
+                                    date.day.toString(),
+                                    style: const TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                      color: AppColors.primary,
                                     ),
                                   ),
-                                );
-                              },
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 12, vertical: 4),
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(
-                                      width: 1, color: AppColors.primary),
-                                ),
-                                child: const Row(
-                                  children: [
-                                    Icon(Icons.edit,
-                                        size: 18, color: Colors.blueAccent),
-                                    SizedBox(width: 4),
-                                    Text("Edit",
-                                        style: TextStyle(color: Colors.blue)),
-                                  ],
-                                ),
+                                  Text(
+                                    _getMonth(date.month),
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
+                                      color: AppColors.text,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                            const SizedBox(width: 12),
-                            GestureDetector(
-                             onTap: () => _deleteEvent(id),
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 12, vertical: 4),
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(
-                                      width: 1, color: AppColors.primary),
-                                ),
-                                child: const Row(
-                                  children: [
-                                    Icon(Icons.delete,
-                                        size: 18, color: Colors.redAccent),
-                                    SizedBox(width: 4),
-                                    Text("Delete",
-                                        style:
-                                            TextStyle(color: Colors.redAccent)),
-                                  ],
+                          ),
+                      ],
+                    ),
+                  Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          title,
+                          style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.text,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        if (location.isNotEmpty)
+                          Row(
+                            children: [
+                              const Icon(Icons.location_on_rounded,
+                                  size: 16, color: AppColors.primary),
+                              const SizedBox(width: 4),
+                              Expanded(
+                                child: Text(
+                                  location,
+                                  style: const TextStyle(
+                                    color: AppColors.subtitle,
+                                    fontWeight: FontWeight.w500,
+                                  ),
                                 ),
                               ),
+                            ],
+                          ),
+                        const SizedBox(height: 12),
+                        Text(
+                          description,
+                          maxLines: 3,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontSize: 14,
+                            color: AppColors.subtitle,
+                            height: 1.5,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        Row(
+                          children: [
+                            Icon(Icons.person_rounded,
+                                size: 16, color: AppColors.subtitle.withOpacity(0.6)),
+                            const SizedBox(width: 4),
+                            Text(
+                              'By $organizer',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: AppColors.subtitle.withOpacity(0.6),
+                              ),
                             ),
+                            const Spacer(),
+                            if (showActions) ...[
+                              IconButton(
+                                icon: const Icon(Icons.edit_rounded,
+                                    size: 20, color: AppColors.subtitle),
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => AddEventScreen(
+                                        eventId: id,
+                                        existingData: data,
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.delete_rounded,
+                                    size: 20, color: Colors.redAccent),
+                                onPressed: () => _deleteEvent(id),
+                              ),
+                            ],
                           ],
                         ),
-                    
-
-                       
-                    ],
+                      ],
+                    ),
                   ),
-                  const SizedBox(height: 6),
-                  Text(
-                    'By $organizer${createdAt != null ? ' • ${_formatDate(createdAt)}' : ''}',
-                    style: const TextStyle(fontSize: 12, color: Colors.black54),
-                  ),
-                  const SizedBox(height: 10),
-                  if (imageUrl != null && imageUrl.isNotEmpty)
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
-                      child: Image.network(
-                        imageUrl,
-                        height: 180,
-                        width: double.infinity,
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                  if (imageUrl != null && imageUrl.isNotEmpty)
-                    const SizedBox(height: 10),
-                  if (date != null)
-                    Text(
-                      '📅 ${date.day}/${date.month}/${date.year}',
-                      style: const TextStyle(
-                        color: Colors.deepPurple,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  if (location.isNotEmpty)
-                    Text(
-                      '📍 $location',
-                      style: const TextStyle(color: Colors.black54),
-                    ),
-                  const SizedBox(height: 10),
-                  Text(description, style: const TextStyle(fontSize: 14)),
                 ],
               ),
             );
@@ -247,5 +299,13 @@ class _EventScreenState extends State<EventsScreen> {
         );
       },
     );
+  }
+
+  String _getMonth(int month) {
+    const months = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+    ];
+    return months[month - 1];
   }
 }

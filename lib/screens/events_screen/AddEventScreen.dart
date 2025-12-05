@@ -55,6 +55,18 @@ class _AddEventScreenState extends State<AddEventScreen> {
       initialDate: _eventDate ?? now,
       firstDate: now,
       lastDate: DateTime(2100),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: const ColorScheme.light(
+              primary: AppColors.primary,
+              onPrimary: Colors.white,
+              onSurface: AppColors.text,
+            ),
+          ),
+          child: child!,
+        );
+      },
     );
     if (picked != null) setState(() => _eventDate = picked);
   }
@@ -104,17 +116,18 @@ class _AddEventScreenState extends State<AddEventScreen> {
         await _firestore.collection('events').doc(eventId).set(data);
       }
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(isEditing ? 'Event updated' : 'Event added')),
-      );
-
-      Navigator.pop(context);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(isEditing ? 'Event updated' : 'Event added')),
+        );
+        Navigator.pop(context);
+      }
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Error: $e')));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+      }
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -124,97 +137,126 @@ class _AddEventScreenState extends State<AddEventScreen> {
       backgroundColor: AppColors.background,
       appBar: AppBar(
         title: Text(widget.eventId != null ? 'Edit Event' : 'Add Event'),
-        backgroundColor: Theme.of(context).primaryColor,
-        foregroundColor: Colors.white,
+        backgroundColor: AppColors.background,
+        elevation: 0,
+        centerTitle: true,
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(20),
         child: Form(
           key: _formKey,
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               AppInput(
                 controller: _titleController,
-                hint: 'Event Title',
-                validator: (v) => v == null || v.isEmpty ? 'Enter title' : null,
                 label: 'Event Title',
+                prefixIcon: Icons.event_rounded,
+                validator: (v) => v == null || v.isEmpty ? 'Enter title' : null,
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 16),
               AppInput(
                 controller: _descController,
                 label: 'Description',
+                prefixIcon: Icons.description_rounded,
                 maxLines: 4,
-                validator: (v) =>
-                    v == null || v.isEmpty ? 'Enter description' : null,
+                validator: (v) => v == null || v.isEmpty ? 'Enter description' : null,
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 16),
               AppInput(
                 controller: _locationController,
-            
-                validator: (v) =>
-                    v == null || v.isEmpty ? 'Enter location' : null, label:'Location',
+                label: 'Location',
+                prefixIcon: Icons.location_on_rounded,
+                validator: (v) => v == null || v.isEmpty ? 'Enter location' : null,
               ),
-              const SizedBox(height: 12),
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 8),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  border: Border.all(color: Colors.grey.withOpacity(0.4)),borderRadius: BorderRadius.all(Radius.circular(16))),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        _eventDate == null
-                            ? 'Select event date'
-                            : 'Date: ${_eventDate!.day}/${_eventDate!.month}/${_eventDate!.year}',
-                      ),
-                    ),
-                    TextButton(
-                      onPressed: _pickDate,
-                      child: const Text('Pick Date'),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 12),
-              GestureDetector(
-                onTap: _pickImage,
-                child: _selectedImage != null
-                    ? Image.file(
-                        _selectedImage!,
-                        height: 180,
-                        fit: BoxFit.cover,
-                      )
-                    : (widget.existingData?['imageUrl'] != null &&
-                          widget.existingData!['imageUrl'].isNotEmpty)
-                    ? Image.network(
-                        widget.existingData!['imageUrl'],
-                        height: 180,
-                        fit: BoxFit.cover,
-                      )
-                    : Container(
-                        height: 180,
-                        width: double.infinity,
-                        color: Colors.grey[200],
-                        alignment: Alignment.center,
-                        child: const Icon(Icons.add_a_photo, size: 40),
-                      ),
-              ),
-              const SizedBox(height: 20),
-              _isLoading
-                  ? const CircularProgressIndicator()
-                  : ElevatedButton.icon(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Theme.of(context).primaryColor,
-                        padding: const EdgeInsets.symmetric(
-                          vertical: 12,
-                          horizontal: 24,
+              const SizedBox(height: 16),
+              
+              // Date Picker
+              InkWell(
+                onTap: _pickDate,
+                borderRadius: BorderRadius.circular(12),
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppColors.border),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.calendar_today_rounded, color: AppColors.primary),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          _eventDate == null
+                              ? 'Select Event Date'
+                              : '${_eventDate!.day}/${_eventDate!.month}/${_eventDate!.year}',
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: _eventDate == null ? AppColors.subtitle : AppColors.text,
+                          ),
                         ),
                       ),
-                      icon: const Icon(Icons.save),
-                      label: Text(widget.eventId != null ? 'Update' : 'Save'),
-                      onPressed: _saveEvent,
-                    ),
+                      const Icon(Icons.arrow_forward_ios_rounded, size: 16, color: AppColors.subtitle),
+                    ],
+                  ),
+                ),
+              ),
+              
+              const SizedBox(height: 24),
+              
+              // Image Picker
+              GestureDetector(
+                onTap: _pickImage,
+                child: Container(
+                  height: 200,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: AppColors.border),
+                    image: _selectedImage != null
+                        ? DecorationImage(
+                            image: FileImage(_selectedImage!),
+                            fit: BoxFit.cover,
+                          )
+                        : (widget.existingData?['imageUrl'] != null &&
+                                widget.existingData!['imageUrl'].isNotEmpty)
+                            ? DecorationImage(
+                                image: NetworkImage(widget.existingData!['imageUrl']),
+                                fit: BoxFit.cover,
+                              )
+                            : null,
+                  ),
+                  child: (_selectedImage == null &&
+                          (widget.existingData?['imageUrl'] == null ||
+                              widget.existingData!['imageUrl'].isEmpty))
+                      ? Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.add_photo_alternate_rounded,
+                                size: 48, color: AppColors.primary.withOpacity(0.5)),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Add Event Image',
+                              style: TextStyle(
+                                color: AppColors.primary.withOpacity(0.5),
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        )
+                      : null,
+                ),
+              ),
+
+              const SizedBox(height: 32),
+              
+              AppButton(
+                text: widget.eventId != null ? 'Update Event' : 'Save Event',
+                onPressed: _saveEvent,
+                isLoading: _isLoading,
+                leadingIcon: Icons.save_rounded,
+              ),
             ],
           ),
         ),

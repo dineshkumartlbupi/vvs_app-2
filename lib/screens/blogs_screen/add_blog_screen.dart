@@ -55,7 +55,10 @@ class _AddBlogScreenState extends State<AddBlogScreen> {
   Future<void> _uploadOrUpdateBlog() async {
     final title = _capitalize(_titleController.text.trim());
     final content = _capitalize(_contentController.text.trim());
-    if (title.isEmpty || content.isEmpty) return;
+    if (title.isEmpty || content.isEmpty) {
+      _showMessage('Please enter title and content');
+      return;
+    }
 
     setState(() => _isUploading = true);
 
@@ -101,7 +104,7 @@ class _AddBlogScreenState extends State<AddBlogScreen> {
       debugPrint('Error saving blog: $e');
       _showMessage('Error saving blog');
     } finally {
-      setState(() => _isUploading = false);
+      if (mounted) setState(() => _isUploading = false);
     }
   }
 
@@ -122,85 +125,91 @@ class _AddBlogScreenState extends State<AddBlogScreen> {
       backgroundColor: AppColors.background,
       appBar: AppBar(
         title: Text(isEditing ? 'Edit Blog' : 'Add New Blog'),
-        backgroundColor: Theme.of(context).primaryColor,
-        foregroundColor: Colors.white,
+        backgroundColor: AppColors.background,
+        elevation: 0,
+        centerTitle: true,
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              GestureDetector(
-                onTap: _pickImage,
-                child: Container(
-                  width: double.infinity,
-                  height: 200,
-                  decoration: BoxDecoration(
-                    color: Colors.grey[200],
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.grey.shade300),
-                  ),
-                  child: _selectedImage != null
-                      ? ClipRRect(
-                          borderRadius: BorderRadius.circular(12),
-                          child: Image.file(
-                            _selectedImage!,
-                            fit: BoxFit.cover,
-                            width: double.infinity,
-                          ),
-                        )
-                      : _existingImageUrl != null
-                      ? ClipRRect(
-                          borderRadius: BorderRadius.circular(12),
-                          child: Image.network(
-                            _existingImageUrl!,
-                            fit: BoxFit.cover,
-                            width: double.infinity,
-                          ),
-                        )
-                      : const Center(
-                          child: Column(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            GestureDetector(
+              onTap: _pickImage,
+              child: Container(
+                width: double.infinity,
+                height: 200,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: AppColors.border),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.primary.withOpacity(0.05),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: _selectedImage != null
+                    ? ClipRRect(
+                        borderRadius: BorderRadius.circular(16),
+                        child: Image.file(
+                          _selectedImage!,
+                          fit: BoxFit.cover,
+                          width: double.infinity,
+                        ),
+                      )
+                    : _existingImageUrl != null && _existingImageUrl!.isNotEmpty
+                        ? ClipRRect(
+                            borderRadius: BorderRadius.circular(16),
+                            child: Image.network(
+                              _existingImageUrl!,
+                              fit: BoxFit.cover,
+                              width: double.infinity,
+                            ),
+                          )
+                        : Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Icon(
-                                Icons.add_a_photo,
-                                size: 40,
-                                color: Colors.grey,
+                                Icons.add_photo_alternate_rounded,
+                                size: 48,
+                                color: AppColors.primary.withOpacity(0.5),
                               ),
-                              SizedBox(height: 8),
-                              Text('Tap to upload image'),
+                              const SizedBox(height: 8),
+                              Text(
+                                'Tap to upload cover image',
+                                style: TextStyle(
+                                  color: AppColors.primary.withOpacity(0.5),
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
                             ],
                           ),
-                        ),
-                ),
               ),
-              const SizedBox(height: 20),
-              AppInput(controller: _titleController, label: 'Title'),
-              const SizedBox(height: 20),
-              AppInput(
-                controller: _contentController,
-                maxLines: 6,
-                label: "Description",
-              ),
-              const SizedBox(height: 30),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _isUploading ? null : _uploadOrUpdateBlog,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Theme.of(context).primaryColor,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                  ),
-                  child: _isUploading
-                      ? const CircularProgressIndicator(color: Colors.white)
-                      : Text(
-                          isEditing ? 'Update Blog' : 'Publish Blog',
-                          style: const TextStyle(fontSize: 16),
-                        ),
-                ),
-              ),
-            ],
-          ),
+            ),
+            const SizedBox(height: 24),
+            AppInput(
+              controller: _titleController,
+              label: 'Blog Title',
+              prefixIcon: Icons.article_rounded,
+            ),
+            const SizedBox(height: 16),
+            AppInput(
+              controller: _contentController,
+              maxLines: 8,
+              label: "Content",
+              prefixIcon: Icons.description_rounded,
+            ),
+            const SizedBox(height: 32),
+            AppButton(
+              text: isEditing ? 'Update Blog' : 'Publish Blog',
+              onPressed: _uploadOrUpdateBlog,
+              isLoading: _isUploading,
+              leadingIcon: isEditing ? Icons.save_rounded : Icons.publish_rounded,
+            ),
+          ],
         ),
       ),
     );

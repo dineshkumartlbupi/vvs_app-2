@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:vvs_app/theme/app_colors.dart';
-import 'package:vvs_app/widgets/ui_components.dart'; // For AppTitle
+import 'package:vvs_app/widgets/ui_components.dart';
 
 class AboutDeveloperScreen extends StatelessWidget {
   const AboutDeveloperScreen({super.key});
 
-  // Replace these with your real values
   static const String developerName = "Dinesh Kumar";
   static const String role = "Mobile Apps Developer";
   static const String email = "kumar@gmail.com";
@@ -34,10 +33,7 @@ class AboutDeveloperScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final textTheme = theme.textTheme;
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isWide = screenWidth > 700;
+    final isWide = MediaQuery.of(context).size.width > 700;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -45,218 +41,233 @@ class AboutDeveloperScreen extends StatelessWidget {
         title: const Text('About Developer'),
         centerTitle: true,
         backgroundColor: AppColors.primary,
-        foregroundColor: Colors.white,
         elevation: 0,
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+        padding: const EdgeInsets.all(20),
+        physics: const BouncingScrollPhysics(),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Header: avatar + name + role + actions
+            // Header Card
             Container(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [AppColors.primary.withOpacity(0.10), Colors.white],
+                  colors: [Colors.white, AppColors.primary.withOpacity(0.05)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppColors.primary.withOpacity(0.06)),
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.primary.withOpacity(0.1),
+                    blurRadius: 20,
+                    offset: const Offset(0, 10),
+                  ),
+                ],
+                border: Border.all(color: Colors.white),
               ),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
+              child: Column(
                 children: [
-                  // Avatar (replace AssetImage with your image or network)
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(14),
-                    child: Container(
-                      width: isWide ? 110 : 86,
-                      height: isWide ? 110 : 86,
-                      color: AppColors.primary.withOpacity(0.08),
-                      child: const Icon(
-                        Icons.person,
-                        size: 56,
-                        color: AppColors.primary,
-                      ),
+                  Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(color: AppColors.primary.withOpacity(0.2), width: 2),
+                    ),
+                    child: CircleAvatar(
+                      radius: 50,
+                      backgroundColor: AppColors.primary.withOpacity(0.1),
+                      child: const Icon(Icons.person_rounded, size: 50, color: AppColors.primary),
                     ),
                   ),
-
-                  const SizedBox(width: 16),
-
-                  // Name & role
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          developerName,
-                        ),
-                        const SizedBox(height: 6),
-                        Text(
-                          role,
-                          style: textTheme.bodyMedium?.copyWith(
-                              color: Colors.black87, fontSize: 14),
-                        ),
-                        const SizedBox(height: 10),
-                        Wrap(
-                          spacing: 8,
-                          runSpacing: 6,
-                          children: [
-                            _InfoPill(icon: Icons.location_on_outlined, label: location),
-                            _InfoPill(icon: Icons.mail_outline, label: email),
-                            _InfoPill(icon: Icons.phone_outlined, label: phone),
-                          ],
-                        ),
-                      ],
+                  const SizedBox(height: 16),
+                  Text(
+                    developerName,
+                    style: const TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.text,
                     ),
                   ),
-
-                  const SizedBox(width: 8),
-
-                
+                  const SizedBox(height: 4),
+                  Text(
+                    role,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    alignment: WrapAlignment.center,
+                    children: [
+                      _InfoPill(icon: Icons.location_on_rounded, label: location),
+                      _InfoPill(icon: Icons.email_rounded, label: email),
+                      _InfoPill(icon: Icons.phone_rounded, label: phone),
+                    ],
+                  ),
                 ],
               ),
             ),
 
-            const SizedBox(height: 18),
+            const SizedBox(height: 24),
 
-            // Bio card
-            Container(
-              child: Padding(
-                padding: const EdgeInsets.all(14),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const AppTitle('About'),
-                    const SizedBox(height: 8),
-                    Text(
-                      bio,
-                      style: textTheme.bodyMedium?.copyWith(color: Colors.black87),
-                    ),
-                    const SizedBox(height: 12),
-                   
-                  ],
+            // Bio Section
+            _buildSectionCard(
+              title: 'About Me',
+              icon: Icons.info_outline_rounded,
+              child: Text(
+                bio,
+                style: const TextStyle(
+                  fontSize: 15,
+                  height: 1.6,
+                  color: AppColors.subtitle,
                 ),
               ),
             ),
 
-            const SizedBox(height: 18),
+            const SizedBox(height: 20),
 
-            // Skills & Tools side-by-side on wide screens
+            // Skills & Tools
             if (isWide)
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Expanded(child: _buildSkillsCard(context)),
-                  const SizedBox(width: 12),
-                  Expanded(child: _buildToolsCard(context)),
+                  Expanded(child: _buildSkillsCard()),
+                  const SizedBox(width: 20),
+                  Expanded(child: _buildToolsCard()),
                 ],
               )
             else ...[
-              _buildSkillsCard(context),
-              const SizedBox(height: 12),
-              _buildToolsCard(context),
+              _buildSkillsCard(),
+              const SizedBox(height: 20),
+              _buildToolsCard(),
             ],
 
-            const SizedBox(height: 18),
+            const SizedBox(height: 40),
 
-            // Footer: small credits
-            Center(
-              child: Column(
-                children: [
-                  Text(
-                    'Made with ❤️ using Flutter',
-                    style: textTheme.bodySmall?.copyWith(color: Colors.black54),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    '© ${DateTime.now().year} $developerName',
-                    style: textTheme.bodySmall?.copyWith(color: Colors.black54),
-                  ),
-                ],
-              ),
+            // Footer
+            Column(
+              children: [
+                const Text(
+                  'Made with ❤️ using Flutter',
+                  style: TextStyle(color: AppColors.subtitle, fontSize: 12),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  '© ${DateTime.now().year} $developerName',
+                  style: TextStyle(color: AppColors.subtitle.withOpacity(0.5), fontSize: 12),
+                ),
+              ],
             ),
-
-            const SizedBox(height: 18),
+            const SizedBox(height: 20),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildSkillsCard(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(14),
+  Widget _buildSectionCard({required String title, required IconData icon, required Widget child}) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const AppTitle('Skills'),
-          const SizedBox(height: 8),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: skills
-                .map(
-                  (s) => Chip(
-                    label: Text(s),
-                    backgroundColor: AppColors.primary.withOpacity(0.08),
-                    elevation: 0,
-                  ),
-                )
-                .toList(),
+          Row(
+            children: [
+              Icon(icon, color: AppColors.primary, size: 20),
+              const SizedBox(width: 8),
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.text,
+                ),
+              ),
+            ],
           ),
+          const SizedBox(height: 16),
+          child,
         ],
       ),
     );
   }
 
-  Widget _buildToolsCard(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(14),
+  Widget _buildSkillsCard() {
+    return _buildSectionCard(
+      title: 'Skills',
+      icon: Icons.code_rounded,
+      child: Wrap(
+        spacing: 8,
+        runSpacing: 8,
+        children: skills
+            .map(
+              (s) => Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withOpacity(0.08),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: AppColors.primary.withOpacity(0.1)),
+                ),
+                child: Text(
+                  s,
+                  style: const TextStyle(
+                    color: AppColors.primary,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 13,
+                  ),
+                ),
+              ),
+            )
+            .toList(),
+      ),
+    );
+  }
+
+  Widget _buildToolsCard() {
+    return _buildSectionCard(
+      title: 'Tools',
+      icon: Icons.build_rounded,
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const AppTitle('Tools used'),
-          const SizedBox(height: 8),
-          Column(
-            children: tools
-                .map(
-                  (t) => Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 6),
-                    child: Row(
-                      children: [
-                        Icon(Icons.build, size: 18, color: AppColors.primary),
-                        const SizedBox(width: 10),
-                        Text(t),
-                      ],
+        children: tools
+            .map(
+              (t) => Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: Row(
+                  children: [
+                    Icon(Icons.check_circle_rounded, size: 16, color: AppColors.success.withOpacity(0.7)),
+                    const SizedBox(width: 10),
+                    Text(
+                      t,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: AppColors.text,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
-                  ),
-                )
-                .toList(),
-          ),
-        ],
+                  ],
+                ),
+              ),
+            )
+            .toList(),
       ),
-    );
-  }
-
-  // Helpers
-  static void _openMail(BuildContext context, String mail) {
-    final uri = Uri(
-      scheme: 'mailto',
-      path: mail,
-    );
-    // Use url_launcher in future to open externally; for now show a hint
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Open mail client: ${uri.toString()} (add url_launcher to actually open)')),
-    );
-  }
-
-  static void _shareText(BuildContext context, String text) {
-    // If you add share_plus you can call Share.share(text)
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Share action triggered (add share_plus to fully enable)')),
     );
   }
 }
@@ -269,19 +280,26 @@ class _InfoPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: theme.colorScheme.primary.withOpacity(0.06),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppColors.border.withOpacity(0.5)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 14, color: AppColors.primary),
+          Icon(icon, size: 14, color: AppColors.subtitle),
           const SizedBox(width: 6),
-          Text(label, style: theme.textTheme.bodySmall),
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 12,
+              color: AppColors.subtitle,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
         ],
       ),
     );

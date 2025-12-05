@@ -854,40 +854,38 @@ class _MarketplaceAllScreenState extends State<MarketplaceAllScreen>
     return Scaffold(
       backgroundColor: AppColors.background,
 
-      appBar: AppBar(
-        // Restore normal toolbar height so leading/back button is visible
-        toolbarHeight: kToolbarHeight,
-        backgroundColor: AppColors.primary,
-        elevation: 0,
-        leading: Navigator.canPop(context)
-            ? IconButton(
-                icon: const Icon(Icons.arrow_back_ios_new),
-                onPressed: () => Navigator.pop(context),
-                tooltip: 'Back',
-              )
-            : null,
-        title: const Text('Marketplace'),
-        centerTitle: true,
-        bottom: TabBar(
-          controller: _tabController,
-          indicatorColor: Colors.white,
-          labelColor: Colors.white, // active tab text color
-          unselectedLabelColor: Colors.white70, // inactive tab text color
-          tabs: const [
-            Tab(text: 'All MarketPlace'),
-            Tab(text: 'My MarketPlace'),
+      body: Column(
+        children: [
+          Container(   decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            AppColors.primary,
+            AppColors.primary.withOpacity(0.95),
+            AppColors.accent.withOpacity(0.9),
           ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
         ),
-        actions: [
-          IconButton(
-            onPressed: _openFilters,
-            icon: const Icon(Icons.tune_rounded),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withOpacity(0.3),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+            spreadRadius: 1,
           ),
         ],
       ),
-
-      body: Column(
-        children: [
+            child: TabBar(
+            controller: _tabController,
+            indicatorColor: Colors.white,
+            labelColor: Colors.white, 
+            unselectedLabelColor: Colors.white70, 
+            tabs: const [
+              Tab(text: 'All Marketplace'),
+              Tab(text: 'My Marketplace'),
+            ],
+                    ),
+          ),
           // Search & quick filters row
           Padding(
             padding: const EdgeInsets.fromLTRB(12, 12, 12, 6),

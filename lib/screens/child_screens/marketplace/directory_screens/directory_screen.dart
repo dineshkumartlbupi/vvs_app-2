@@ -19,8 +19,7 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
   void initState() {
     super.initState();
     _searchController.addListener(
-      () =>
-          setState(() => _query = _searchController.text.toLowerCase().trim()),
+      () => setState(() => _query = _searchController.text.toLowerCase().trim()),
     );
   }
 
@@ -31,7 +30,6 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
   }
 
   Stream<QuerySnapshot> _directoryStream() {
-    // Change 'directory' to your actual collection name if different
     return FirebaseFirestore.instance
         .collection('directory')
         .orderBy('name')
@@ -55,29 +53,51 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text("Who's & Who Directory"),
+        title: const Text("Who's Who Directory"),
         backgroundColor: AppColors.primary,
         elevation: 0,
+        centerTitle: true,
       ),
       body: Column(
         children: [
+          // Search Bar
           Padding(
-            padding: const EdgeInsets.all(16),
-            child: AppInput(
-              controller: _searchController,
-              label: 'Search by name, title, organisation or location',
-              suffixIcon: _query.isNotEmpty
-                  ? IconButton(
-                      icon: const Icon(Icons.clear),
-                      onPressed: () {
-                        _searchController.clear();
-                        FocusScope.of(context).unfocus();
-                      },
-                    )
-                  : null,
+            padding: const EdgeInsets.fromLTRB(20, 10, 20, 20),
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: TextField(
+                controller: _searchController,
+                decoration: InputDecoration(
+                  hintText: 'Search members, roles, or location...',
+                  hintStyle: TextStyle(color: AppColors.subtitle.withOpacity(0.5)),
+                  prefixIcon: const Icon(Icons.search_rounded, color: AppColors.primary),
+                  suffixIcon: _query.isNotEmpty
+                      ? IconButton(
+                          icon: const Icon(Icons.clear_rounded, color: AppColors.subtitle),
+                          onPressed: () {
+                            _searchController.clear();
+                            FocusScope.of(context).unfocus();
+                          },
+                        )
+                      : null,
+                  border: InputBorder.none,
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                ),
+              ),
             ),
           ),
 
+          // List
           Expanded(
             child: StreamBuilder<QuerySnapshot>(
               stream: _directoryStream(),
@@ -91,140 +111,125 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
 
                 final raw = snapshot.data?.docs ?? [];
                 if (raw.isEmpty) {
-                  return Center(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 32),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.people,
-                            size: 64,
-                            color: AppColors.primary.withOpacity(0.12),
-                          ),
-                          const SizedBox(height: 12),
-                          const Text(
-                            'No directory entries yet.',
-                            textAlign: TextAlign.center,
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
+                  return _buildEmptyState('No directory entries yet.');
                 }
 
-                // Map to safe list preserving id
                 final items = raw
                     .map((d) {
-                      final map =
-                          (d.data() as Map<String, dynamic>?) ??
-                          <String, dynamic>{};
+                      final map = (d.data() as Map<String, dynamic>?) ?? <String, dynamic>{};
                       return {'id': d.id, ...map};
                     })
                     .where((m) => _matchesQuery(m as Map<String, dynamic>))
                     .toList();
 
                 if (items.isEmpty) {
-                  return const Center(child: Text('No matches found.'));
+                  return _buildEmptyState('No matches found.');
                 }
 
                 return ListView.separated(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 8,
-                  ),
+                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+                  physics: const BouncingScrollPhysics(),
                   itemCount: items.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 10),
+                  separatorBuilder: (_, __) => const SizedBox(height: 16),
                   itemBuilder: (context, i) {
                     final data = items[i] as Map<String, dynamic>;
                     final id = data['id'] as String? ?? '';
                     final name = (data['name'] ?? '').toString();
                     final title = (data['title'] ?? '').toString();
-                    final organization = (data['organization'] ?? '')
-                        .toString();
+                    final organization = (data['organization'] ?? '').toString();
                     final location = (data['location'] ?? '').toString();
                     final photoUrl = (data['photoUrl'] ?? '').toString();
 
-                    return Card(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
+                    return Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.primary.withOpacity(0.05),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
                       ),
-                      elevation: 2,
-                      child: InkWell(
-                        borderRadius: BorderRadius.circular(14),
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) =>
-                                  DirectoryDetailScreen(docId: id, data: data),
-                            ),
-                          );
-                        },
-                        child: Padding(
-                          padding: const EdgeInsets.all(12),
-                          child: Row(
-                            children: [
-                              CircleAvatar(
-                                radius: 28,
-                                backgroundColor: AppColors.primary.withOpacity(
-                                  0.12,
-                                ),
-                                backgroundImage: photoUrl.isNotEmpty
-                                    ? NetworkImage(photoUrl)
-                                    : null,
-                                child: photoUrl.isEmpty
-                                    ? Icon(
-                                        Icons.person,
-                                        color: AppColors.primary,
-                                      )
-                                    : null,
+                      child: Material(
+                        color: Colors.transparent,
+                        borderRadius: BorderRadius.circular(16),
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(16),
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => DirectoryDetailScreen(docId: id, data: data),
                               ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      name.isNotEmpty ? name : 'Unnamed',
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.w600,
-                                        fontSize: 16,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      title.isNotEmpty
-                                          ? '$title • ${organization.isNotEmpty ? organization : '—'}'
-                                          : (organization.isNotEmpty
-                                                ? organization
-                                                : ''),
-                                      style: const TextStyle(
-                                        fontSize: 13,
-                                        color: Colors.black54,
-                                      ),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                    if (location.isNotEmpty) ...[
-                                      const SizedBox(height: 6),
+                            );
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Row(
+                              children: [
+                                Container(
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    border: Border.all(color: AppColors.primary.withOpacity(0.2), width: 2),
+                                  ),
+                                  child: CircleAvatar(
+                                    radius: 30,
+                                    backgroundColor: AppColors.primary.withOpacity(0.1),
+                                    backgroundImage: photoUrl.isNotEmpty ? NetworkImage(photoUrl) : null,
+                                    child: photoUrl.isEmpty
+                                        ? const Icon(Icons.person_rounded, color: AppColors.primary, size: 30)
+                                        : null,
+                                  ),
+                                ),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
                                       Text(
-                                        location,
+                                        name.isNotEmpty ? name : 'Unnamed',
                                         style: const TextStyle(
-                                          fontSize: 12,
-                                          color: Colors.black45,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 16,
+                                          color: AppColors.text,
                                         ),
                                       ),
+                                      const SizedBox(height: 4),
+                                      if (title.isNotEmpty || organization.isNotEmpty)
+                                        Text(
+                                          [title, organization].where((e) => e.isNotEmpty).join(' • '),
+                                          style: const TextStyle(
+                                            fontSize: 13,
+                                            color: AppColors.subtitle,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      if (location.isNotEmpty) ...[
+                                        const SizedBox(height: 6),
+                                        Row(
+                                          children: [
+                                            Icon(Icons.location_on_rounded, size: 12, color: AppColors.subtitle.withOpacity(0.6)),
+                                            const SizedBox(width: 4),
+                                            Text(
+                                              location,
+                                              style: TextStyle(
+                                                fontSize: 12,
+                                                color: AppColors.subtitle.withOpacity(0.6),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
                                     ],
-                                  ],
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(width: 8),
-                              const Icon(
-                                Icons.chevron_right,
-                                color: Colors.black38,
-                              ),
-                            ],
+                                const Icon(Icons.chevron_right_rounded, color: AppColors.border),
+                              ],
+                            ),
                           ),
                         ),
                       ),
@@ -232,6 +237,26 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
                   },
                 );
               },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyState(String message) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.search_off_rounded, size: 64, color: AppColors.subtitle.withOpacity(0.3)),
+          const SizedBox(height: 16),
+          Text(
+            message,
+            style: const TextStyle(
+              fontSize: 16,
+              color: AppColors.subtitle,
+              fontWeight: FontWeight.w500,
             ),
           ),
         ],

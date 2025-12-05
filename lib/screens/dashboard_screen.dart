@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:vvs_app/screens/child_screens/about_developer_screen.dart';
 import 'package:vvs_app/screens/blogs_screen/blog_screen.dart';
-import 'package:vvs_app/screens/child_screens/book_author/screens/books_list_screen.dart.dart';
+import 'package:vvs_app/screens/child_screens/book_author/screens/books_list_screen.dart';
 import 'package:vvs_app/screens/child_screens/family_regiestration/screens/family_registration_screen.dart';
 import 'package:vvs_app/screens/child_screens/founder_screen.dart';
 import 'package:vvs_app/screens/child_screens/marketplace/screens/marketplace_screen.dart';
@@ -17,6 +17,7 @@ import 'package:vvs_app/screens/child_screens/contact_us_screen.dart';
 import 'package:vvs_app/screens/child_screens/about_us_screen.dart';
 import 'package:vvs_app/screens/child_screens/terms_screen.dart';
 import 'package:vvs_app/screens/marketplace/marketplace_all_screen.dart.dart';
+
 import 'package:vvs_app/screens/message_screen/messages_screen.dart';
 import 'package:vvs_app/utils/custom_app_bar.dart';
 import 'package:vvs_app/utils/custom_bottom_nav.dart';
@@ -34,7 +35,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     const HomeScreen(),
     NewsBulletinScreen(),
     MatrimonialScreen(),
-    const MarketplaceScreen(),
+    const MarketplaceAllScreen(),
     const ProfileScreen(),
   ];
 
@@ -53,7 +54,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     'Books & Author': const BooksListScreen(),
     'About Developer': const AboutDeveloperScreen(),
     'Family Registration': const FamilyRegistrationScreen(),
-    'Market Place': const MarketplaceAllScreen(),
+    'Market Place': const MarketplaceScreen(),
     'Blood Group & Donors': const BloodDonorsScreen(),
     'Message(Chat)': const MessagesScreen(),
     'Varshney One ID Card': const VvsIdCardScreen(),

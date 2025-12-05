@@ -1,4 +1,3 @@
-// lib/screens/chat/chat_screen.dart
 import 'dart:async';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
@@ -32,7 +31,10 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   void initState() {
     super.initState();
-    ChatService.ensureConversation(peerId: widget.peerId, peerName: widget.peerName, peerPhoto: widget.peerPhoto);
+    ChatService.ensureConversation(
+        peerId: widget.peerId,
+        peerName: widget.peerName,
+        peerPhoto: widget.peerPhoto);
     _messagesQuery = ChatService.messagesQuery(peerId: widget.peerId);
     _listen();
   }
@@ -47,7 +49,6 @@ class _ChatScreenState extends State<ChatScreen> {
       }
       final m = Map<String, dynamic>.from(snapVal as Map);
       final v = m.values.toList();
-      // convert to list of maps, sort by timestamp
       for (final x in v) {
         final map = Map<String, dynamic>.from(x as Map);
         _messages.add(map);
@@ -58,9 +59,9 @@ class _ChatScreenState extends State<ChatScreen> {
         return ta.compareTo(tb);
       });
       setState(() {});
-      // scroll to bottom
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (_scroll.hasClients) _scroll.jumpTo(_scroll.position.maxScrollExtent);
+        if (_scroll.hasClients)
+          _scroll.jumpTo(_scroll.position.maxScrollExtent);
       });
     });
   }
@@ -92,35 +93,75 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final myUid = ChatService.uuid; // internal getter
+    final myUid = ChatService.uuid;
     return Scaffold(
+      backgroundColor: const Color(0xFFF5F5F5), // Light grey background
       appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 1,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: AppColors.text),
+          onPressed: () => Navigator.pop(context),
+        ),
         title: Row(
           children: [
             CircleAvatar(
-              backgroundImage: (widget.peerPhoto != null && widget.peerPhoto!.isNotEmpty) ? NetworkImage(widget.peerPhoto!) : null,
-              child: (widget.peerPhoto == null || widget.peerPhoto!.isEmpty) ? const Icon(Icons.person) : null,
+              radius: 18,
+              backgroundColor: AppColors.primary.withOpacity(0.1),
+              backgroundImage: (widget.peerPhoto != null && widget.peerPhoto!.isNotEmpty)
+                  ? NetworkImage(widget.peerPhoto!)
+                  : null,
+              child: (widget.peerPhoto == null || widget.peerPhoto!.isEmpty)
+                  ? const Icon(Icons.person_rounded, color: AppColors.primary, size: 20)
+                  : null,
             ),
             const SizedBox(width: 12),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(widget.peerName),
-                // optionally show online / last seen using Firestore presence
-              ],
+            Expanded(
+              child: Text(
+                widget.peerName,
+                style: const TextStyle(
+                  color: AppColors.text,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
           ],
         ),
-        backgroundColor: AppColors.primary,
       ),
       body: Column(
         children: [
           Expanded(
             child: _messages.isEmpty
-                ? const Center(child: Text('No messages yet — say hi 👋'))
+                ? Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: AppColors.primary.withOpacity(0.1),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(Icons.waving_hand_rounded,
+                              color: AppColors.primary, size: 40),
+                        ),
+                        const SizedBox(height: 12),
+                        const Text(
+                          'Say Hello! 👋',
+                          style: TextStyle(
+                            color: AppColors.subtitle,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
                 : ListView.builder(
                     controller: _scroll,
-                    padding: const EdgeInsets.all(12),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
                     itemCount: _messages.length,
                     itemBuilder: (context, i) {
                       final m = _messages[i];
@@ -129,71 +170,101 @@ class _ChatScreenState extends State<ChatScreen> {
                       final txt = (m['text'] ?? '').toString();
                       final ts = m['timestamp'];
                       final time = ts is int ? _formatTime(ts) : '';
+
                       return Align(
                         alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
-                        child: ConstrainedBox(
-                          constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.75),
-                          child: Card(
-                            color: isMe ? AppColors.primary.withOpacity(0.95) : Colors.white,
-                            elevation: 1,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                children: [
-                                  Text(
-                                    txt,
-                                    style: TextStyle(
-                                      color: isMe ? Colors.white : Colors.black87,
-                                      fontSize: 15,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 6),
-                                  Text(
-                                    time,
-                                    style: TextStyle(
-                                      color: (isMe ? Colors.white70 : Colors.black45),
-                                      fontSize: 11,
-                                    ),
-                                  ),
-                                ],
-                              ),
+                        child: Container(
+                          margin: const EdgeInsets.only(bottom: 12),
+                          constraints: BoxConstraints(
+                              maxWidth: MediaQuery.of(context).size.width * 0.75),
+                          decoration: BoxDecoration(
+                            color: isMe ? AppColors.primary : Colors.white,
+                            borderRadius: BorderRadius.only(
+                              topLeft: const Radius.circular(20),
+                              topRight: const Radius.circular(20),
+                              bottomLeft: isMe ? const Radius.circular(20) : Radius.zero,
+                              bottomRight: isMe ? Radius.zero : const Radius.circular(20),
                             ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.05),
+                                blurRadius: 5,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Text(
+                                txt,
+                                style: TextStyle(
+                                  color: isMe ? Colors.white : AppColors.text,
+                                  fontSize: 15,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                time,
+                                style: TextStyle(
+                                  color: isMe ? Colors.white.withOpacity(0.7) : AppColors.subtitle.withOpacity(0.6),
+                                  fontSize: 10,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       );
                     },
                   ),
           ),
-          SafeArea(
-            top: false,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              child: Row(
-                children: [
-                  Expanded(
+          Container(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 10,
+                  offset: const Offset(0, -5),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF5F5F5),
+                      borderRadius: BorderRadius.circular(24),
+                    ),
                     child: TextField(
                       controller: _controller,
                       minLines: 1,
                       maxLines: 5,
-                      decoration: InputDecoration(
-                        hintText: 'Type a message',
-                        filled: true,
-                        fillColor: Colors.white,
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(30), borderSide: BorderSide.none),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                      decoration: const InputDecoration(
+                        hintText: 'Type a message...',
+                        hintStyle: TextStyle(color: Colors.grey),
+                        border: InputBorder.none,
+                        contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                       ),
                     ),
                   ),
-                  const SizedBox(width: 8),
-                  FloatingActionButton.small(
-                    onPressed: _send,
-                    backgroundColor: AppColors.primary,
-                    child: const Icon(Icons.send, size: 18),
+                ),
+                const SizedBox(width: 12),
+                GestureDetector(
+                  onTap: _send,
+                  child: Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: const BoxDecoration(
+                      color: AppColors.primary,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(Icons.send_rounded, color: Colors.white, size: 20),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ],
