@@ -1,4 +1,4 @@
-package com.syniso.varshneyone
+package com.synisoit.varshneyone
 
 import io.flutter.embedding.android.FlutterActivity
 

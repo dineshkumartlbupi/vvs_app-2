@@ -19,7 +19,7 @@ if (keystorePropertiesFile.exists()) {
 }
 
 android {
-    namespace = "com.syniso.varshneyone"
+    namespace = "com.synisoit.varshneyone"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -33,11 +33,11 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.syniso.varshneyone"
+        applicationId = "com.synisoit.varshneyone"
         minSdk = 24
         targetSdk = flutter.targetSdkVersion
-        versionCode = 10
-        versionName = "1.1.0"
+        versionCode = 1
+        versionName = "1.0.0"
     }
 
     signingConfigs {

@@ -51,6 +51,50 @@
       },
       "oauth_client": [
         {
+          "client_id": "1087273878944-g9u78l5tvoh3be3qvp0t3kk8g1nlso0j.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.syniso.varshneyone",
+            "certificate_hash": "5f9ad25e668f3b4a5f3295bf7ec544479ca97141"
+          }
+        },
+        {
+          "client_id": "1087273878944-ka0oovv25fh48dqb5eat0r37gvb2vi0q.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCiMZ7pEL5l4JYN2eEzC8GRx7pCeRKFD-o"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1087273878944-ka0oovv25fh48dqb5eat0r37gvb2vi0q.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "1087273878944-2d69vdfj80m4kljc81p5og02q91ifrai.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.toletforrent.app.testProject"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1087273878944:android:b4df7f22e9f144e90990c5",
+        "android_client_info": {
+          "package_name": "com.synisoit.varshneyone"
+        }
+      },
+      "oauth_client": [
+        {
           "client_id": "1087273878944-ka0oovv25fh48dqb5eat0r37gvb2vi0q.apps.googleusercontent.com",
           "client_type": 3
         }
