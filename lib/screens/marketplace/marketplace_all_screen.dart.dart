@@ -161,7 +161,7 @@ class _MarketplaceAllScreenState extends State<MarketplaceAllScreen>
                   const SizedBox(height: 8),
 
                   DropdownButtonFormField<String>(
-                    value: tmpCat.isEmpty ? null : tmpCat,
+                    initialValue: tmpCat.isEmpty ? null : tmpCat,
                     decoration: const InputDecoration(
                       labelText: 'Category',
                       border: OutlineInputBorder(),
@@ -193,7 +193,7 @@ class _MarketplaceAllScreenState extends State<MarketplaceAllScreen>
 
                   // Subcategory dropdown (dynamic)
                   DropdownButtonFormField<String>(
-                    value: tmpSub.isEmpty ? null : tmpSub,
+                    initialValue: tmpSub.isEmpty ? null : tmpSub,
                     decoration: const InputDecoration(
                       labelText: 'Subcategory',
                       border: OutlineInputBorder(),
@@ -210,7 +210,7 @@ class _MarketplaceAllScreenState extends State<MarketplaceAllScreen>
 
                   // Sort
                   DropdownButtonFormField<String>(
-                    value: tmpSort,
+                    initialValue: tmpSort,
                     items: const [
                       DropdownMenuItem(
                         value: 'recent',

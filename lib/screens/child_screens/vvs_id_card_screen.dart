@@ -19,7 +19,7 @@ class VvsIdCardScreen extends StatelessWidget {
           .doc('__missing__')
           .get()
           .asStream()
-          .map((s) => s as DocumentSnapshot<Map<String, dynamic>>);
+          .map((s) => s);
     }
     return FirebaseFirestore.instance
         .collection('users')
@@ -31,9 +31,10 @@ class VvsIdCardScreen extends StatelessWidget {
     if (ts == null) return '—';
     try {
       if (ts is Timestamp) return DateFormat.yMMMd().format(ts.toDate());
-      if (ts is int)
+      if (ts is int) {
         return DateFormat.yMMMd()
             .format(DateTime.fromMillisecondsSinceEpoch(ts));
+      }
       if (ts is String) {
         final parsed = DateTime.tryParse(ts);
         if (parsed != null) return DateFormat.yMMMd().format(parsed);

@@ -119,7 +119,7 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
                       final map = (d.data() as Map<String, dynamic>?) ?? <String, dynamic>{};
                       return {'id': d.id, ...map};
                     })
-                    .where((m) => _matchesQuery(m as Map<String, dynamic>))
+                    .where((m) => _matchesQuery(m))
                     .toList();
 
                 if (items.isEmpty) {
@@ -132,7 +132,7 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
                   itemCount: items.length,
                   separatorBuilder: (_, __) => const SizedBox(height: 16),
                   itemBuilder: (context, i) {
-                    final data = items[i] as Map<String, dynamic>;
+                    final data = items[i];
                     final id = data['id'] as String? ?? '';
                     final name = (data['name'] ?? '').toString();
                     final title = (data['title'] ?? '').toString();

@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:vvs_app/constants/app_strings.dart';
 import '../theme/app_colors.dart';
-import '../widgets/ui_components.dart';
 
 class CustomAppBar extends StatefulWidget implements PreferredSizeWidget {
   final String title;

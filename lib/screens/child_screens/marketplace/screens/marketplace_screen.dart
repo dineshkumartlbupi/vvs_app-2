@@ -155,7 +155,7 @@ class _MarketplaceAllScreenState extends State<MarketplaceScreen>
                   ),
                   const SizedBox(height: 20),
                   DropdownButtonFormField<String>(
-                    value: tmpCat.isEmpty ? null : tmpCat,
+                    initialValue: tmpCat.isEmpty ? null : tmpCat,
                     decoration: const InputDecoration(
                       labelText: 'Category',
                       border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(12))),
@@ -171,7 +171,7 @@ class _MarketplaceAllScreenState extends State<MarketplaceScreen>
                   ),
                   const SizedBox(height: 16),
                   DropdownButtonFormField<String>(
-                    value: tmpSub.isEmpty ? null : tmpSub,
+                    initialValue: tmpSub.isEmpty ? null : tmpSub,
                     decoration: const InputDecoration(
                       labelText: 'Subcategory',
                       border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(12))),
@@ -183,7 +183,7 @@ class _MarketplaceAllScreenState extends State<MarketplaceScreen>
                   ),
                   const SizedBox(height: 16),
                   DropdownButtonFormField<String>(
-                    value: tmpSort,
+                    initialValue: tmpSort,
                     items: const [
                       DropdownMenuItem(value: 'recent', child: Text('Most recent')),
                       DropdownMenuItem(value: 'nameAsc', child: Text('Name A → Z')),

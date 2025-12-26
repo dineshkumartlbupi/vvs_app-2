@@ -263,7 +263,7 @@ class _FamilyRegistrationScreenState extends State<FamilyRegistrationScreen> {
                     final createdAt = data['createdAt']; // could be Timestamp
 
                     final createdAtStr = createdAt is Timestamp
-                        ? (createdAt as Timestamp).toDate().toString()
+                        ? (createdAt).toDate().toString()
                         : (createdAt?.toString() ?? '');
 
                     return Material(

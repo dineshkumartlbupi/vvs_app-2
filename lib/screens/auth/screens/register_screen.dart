@@ -87,7 +87,7 @@ class _RegisterScreenState extends State<RegisterScreen>
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
   double _pwdScore = 0.0;
-  int _currentStep = 0;
+  final int _currentStep = 0;
   final _scrollController = ScrollController();
 
   @override
@@ -521,29 +521,22 @@ class _RegisterScreenState extends State<RegisterScreen>
                               title: 'Basic Information',
                               icon: Icons.person_outline_rounded,
                               children: [
-                                Row(
-                                  children: [
-                                    Expanded(
-                                      child: AppInput(
+                                AppInput(
                                         controller: _firstNameController,
                                         label: 'First Name',
                                         prefixIcon: Icons.person_outline_rounded,
                                         validator: _required,
                                         textInputAction: TextInputAction.next,
                                       ),
-                                    ),
-                                    const SizedBox(width: 12),
-                                    Expanded(
-                                      child: AppInput(
+                                        const SizedBox(height: 12),
+                                      AppInput(
                                         controller: _middleNameController,
                                         label: 'Middle Name',
                                         prefixIcon: Icons.person_outline,
                                         validator: (_) => null,
                                         textInputAction: TextInputAction.next,
                                       ),
-                                    ),
-                                  ],
-                                ),
+                             
                                 const SizedBox(height: 12),
                                 AppInput(
                                   controller: _lastNameController,
@@ -635,31 +628,21 @@ class _RegisterScreenState extends State<RegisterScreen>
                               title: 'Address Details',
                               icon: Icons.location_on_outlined,
                               children: [
-                                Row(
-                                  children: [
-                                    Expanded(
-                                      flex: 2,
-                                      child: AppInput(
+                           AppInput(
                                         controller: _houseNumberController,
                                         label: 'House/Flat No.',
                                         prefixIcon: Icons.home_outlined,
                                         validator: _required,
                                         textInputAction: TextInputAction.next,
                                       ),
-                                    ),
-                                    const SizedBox(width: 12),
-                                    Expanded(
-                                      flex: 3,
-                                      child: AppInput(
+                                         const SizedBox(height: 12),
+                                AppInput(
                                         controller: _streetAreaController,
                                         label: 'Street/Area',
                                         prefixIcon: Icons.add_road_outlined,
                                         validator: _required,
                                         textInputAction: TextInputAction.next,
                                       ),
-                                    ),
-                                  ],
-                                ),
                                 const SizedBox(height: 12),
                                 AppInput(
                                   controller: _villageController,
@@ -669,29 +652,22 @@ class _RegisterScreenState extends State<RegisterScreen>
                                   textInputAction: TextInputAction.next,
                                 ),
                                 const SizedBox(height: 12),
-                                Row(
-                                  children: [
-                                    Expanded(
-                                      child: AppInput(
+                                AppInput(
                                         controller: _cityController,
                                         label: 'City',
                                         prefixIcon: Icons.location_city_outlined,
                                         validator: _required,
                                         textInputAction: TextInputAction.next,
                                       ),
-                                    ),
-                                    const SizedBox(width: 12),
-                                    Expanded(
-                                      child: AppInput(
+                                         const SizedBox(height: 12),
+                                      AppInput(
                                         controller: _districtController,
                                         label: 'District',
                                         prefixIcon: Icons.map_outlined,
                                         validator: _required,
                                         textInputAction: TextInputAction.next,
                                       ),
-                                    ),
-                                  ],
-                                ),
+                               
                                 const SizedBox(height: 12),
                                 AppDropdown(
                                   label: 'State',
@@ -705,11 +681,7 @@ class _RegisterScreenState extends State<RegisterScreen>
                                       : null,
                                 ),
                                 const SizedBox(height: 12),
-                                Row(
-                                  children: [
-                                    Expanded(
-                                      flex: 2,
-                                      child: AppInput(
+                                AppInput(
                                         controller: _pinCodeController,
                                         label: 'PIN Code',
                                         prefixIcon: Icons.pin_outlined,
@@ -721,20 +693,15 @@ class _RegisterScreenState extends State<RegisterScreen>
                                           LengthLimitingTextInputFormatter(6),
                                         ],
                                       ),
-                                    ),
-                                    const SizedBox(width: 12),
-                                    Expanded(
-                                      flex: 3,
-                                      child: AppInput(
+                                         const SizedBox(height: 16),
+                                      AppInput(
                                         controller: _landmarkController,
                                         label: 'Landmark (Optional)',
                                         prefixIcon: Icons.place_outlined,
                                         validator: (_) => null,
                                         textInputAction: TextInputAction.next,
                                       ),
-                                    ),
-                                  ],
-                                ),
+                        
                               ],
                             ),
 

@@ -3,7 +3,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:vvs_app/screens/events_screen/AddEventScreen.dart';
 import 'package:vvs_app/theme/app_colors.dart';
-import 'package:vvs_app/widgets/ui_components.dart';
 
 class EventsScreen extends StatefulWidget {
   const EventsScreen({super.key});

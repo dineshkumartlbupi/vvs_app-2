@@ -387,7 +387,7 @@ class _AddEditProductScreenState extends State<AddEditProductScreen>
 
                         // Category
                         DropdownButtonFormField<String>(
-                          value: controller.category.value.isEmpty
+                          initialValue: controller.category.value.isEmpty
                               ? null
                               : controller.category.value,
                           items: controller.categories
@@ -474,7 +474,7 @@ class _AddEditProductScreenState extends State<AddEditProductScreen>
                             Expanded(
                               flex: 2,
                               child: DropdownButtonFormField<String>(
-                                value: controller.unit.value.isEmpty
+                                initialValue: controller.unit.value.isEmpty
                                     ? null
                                     : controller.unit.value,
                                 items: controller.units
@@ -507,7 +507,7 @@ class _AddEditProductScreenState extends State<AddEditProductScreen>
 
                         // Condition
                         DropdownButtonFormField<String>(
-                          value: controller.condition.value.isEmpty
+                          initialValue: controller.condition.value.isEmpty
                               ? null
                               : controller.condition.value,
                           items: controller.conditions

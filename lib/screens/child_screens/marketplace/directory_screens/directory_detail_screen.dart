@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:vvs_app/theme/app_colors.dart';
-import 'package:vvs_app/widgets/ui_components.dart';
 
 class DirectoryDetailScreen extends StatelessWidget {
   final String docId;

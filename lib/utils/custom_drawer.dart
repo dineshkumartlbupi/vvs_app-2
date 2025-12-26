@@ -5,7 +5,6 @@ import 'package:flutter/services.dart';
 import 'package:vvs_app/screens/auth/screens/login_screen.dart';
 import 'package:vvs_app/widgets/bottom_footer.dart';
 import '../theme/app_colors.dart';
-import '../widgets/ui_components.dart';
 
 class CustomDrawer extends StatefulWidget {
   final Map<String, Widget> screenMap;

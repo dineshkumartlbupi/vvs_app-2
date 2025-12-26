@@ -10,7 +10,6 @@ import 'package:vvs_app/services/home_service.dart';
 import 'package:vvs_app/widgets/AutoSlidingNewsBanner.dart';
 import 'package:vvs_app/widgets/bottom_footer.dart';
 import '../../theme/app_colors.dart';
-import '../../widgets/ui_components.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});

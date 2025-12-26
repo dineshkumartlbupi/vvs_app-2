@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:vvs_app/theme/app_colors.dart';
-import 'package:vvs_app/widgets/ui_components.dart';
 
 class AboutDeveloperScreen extends StatelessWidget {
   const AboutDeveloperScreen({super.key});
